@@ -52,7 +52,9 @@ rc = fpga_pci_attach(0, 0, 4, BURST_CAPABLE, &pci_bar_handle);
 opens the sysfs file: /sys/bus/pci/devices/0000:00:0f.0/resource4_wc and uses mmap to create a user space pointer to Region 4 with a WC attribute. The returned pci_bar_handle structure is used by other FPGA library calls to read and write the F1 card.
 
 ## Write Performance
-This app note includes a program called wc_perf. To build the program run make in the directory. This program will perform various write operations with and without WC enabled based on the options used. To see a list of the available options, type wc_perf h.
+This app note includes a program called wc_perf. To build the program run make in the directory. This program will perform various write operations with and without WC enabled based on the options used. To see a list of the available options, type wc_perf -h.
+
+![WC Performance Graph](./Write-Combine-Performance.png)
 
 ## A Few Words about Side Effects
 
