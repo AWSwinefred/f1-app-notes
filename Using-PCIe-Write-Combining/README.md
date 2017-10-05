@@ -57,6 +57,7 @@ This app note includes a program called wc_perf. To build the program run make i
 ![WC Performance Graph](./Write-Combine-Performance.png)
 
 | size | burst | burst-wc | custom | custom-wc |
+| (Bytes) | (GB/s) |
 | ---- | :---: | :---: | :---: | :---: |
 | 64 | 0.003485 | 0.025869 | 0.005318 | 0.006231 |
 | 128 |	0.028432 | 0.438356 | 0.054054 | 0.465455 |
