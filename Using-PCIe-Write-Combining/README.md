@@ -67,8 +67,9 @@ Application Note:
 
 ## For Further Reading:
 The sysfs Filesystem
-https://www.kernel.org/pub/linux/kernel/people/mochel/doc/papers/ols-2005/mochel.pdf
-https://www.kernel.org/doc/Documentation/filesystems/sysfs.txt
+
+* https://www.kernel.org/pub/linux/kernel/people/mochel/doc/papers/ols-2005/mochel.pdf
+* https://www.kernel.org/doc/Documentation/filesystems/sysfs.txt
 PCIe
-https://www.kernel.org/doc/Documentation/PCI/pci.txt
+* https://www.kernel.org/doc/Documentation/PCI/pci.txt
 
