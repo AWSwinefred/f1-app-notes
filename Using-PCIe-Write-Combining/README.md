@@ -42,14 +42,19 @@ The command will produce output similar to the following:
 ```
 
 Region 4 is where the card’s 64 GB of DDR memory is located. To gain access to this region, the memory must be mapped into the user address space of the application. The function, fpga_pci_attach, performs this operation and stores the information in a structure.
+```
 rc = fpga_pci_attach(slot_id, pf_id, bar_id, write_combine, &pci_bar_handle);
+```
 Four input arguments are necessary: (1) the slot number, (2) the physical function, (3) the bar/region, and (4) the write combining flag. The function uses these arguments to open the appropriate sysfs file. For example, calling the function with the following arguments, 
+```
 rc = fpga_pci_attach(0, 0, 4, BURST_CAPABLE, &pci_bar_handle);
+```
 opens the sysfs file: /sys/bus/pci/devices/0000:00:0f.0/resource4_wc and uses mmap to create a user space pointer to Region 4 with a WC attribute. The returned pci_bar_handle structure is used by other FPGA library calls to read and write the F1 card.
-Write Performance
+
+## Write Performance
 This app note includes a program called wc_perf. To build the program run make in the directory. This program will perform various write operations with and without WC enabled based on the options used. To see a list of the available options, type wc_perf h.
 
-A Few Words about Side Effects
+## A Few Words about Side Effects
 
 User vs Physical Space
 PCIS Interface
@@ -60,7 +65,7 @@ Appendix
 Application Note:
 
 
-For Further Reading:
+## For Further Reading:
 The sysfs Filesystem
 https://www.kernel.org/pub/linux/kernel/people/mochel/doc/papers/ols-2005/mochel.pdf
 https://www.kernel.org/doc/Documentation/filesystems/sysfs.txt
