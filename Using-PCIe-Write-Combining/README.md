@@ -50,6 +50,21 @@ Four input arguments are necessary: (1) the slot number, (2) the physical functi
 rc = fpga_pci_attach(0, 0, 4, BURST_CAPABLE, &pci_bar_handle);
 ```
 opens the sysfs file: ```/sys/bus/pci/devices/0000:00:0f.0/resource4_wc``` and uses ```mmap``` to create a user space pointer to Region 4 with a WC attribute. The returned pci_bar_handle structure is used by other FPGA library calls to read and write the F1 card.
+```
+int custom_move(pci_bar_handle_t handle, uint64_t offset, uint32_t* datap, uint64_t dword_len) {
+
+  /** get the pointer to the beginning of the range */
+  uint32_t *reg_ptr;
+  
+  int rc  = fpga_pci_get_address(handle, offset, sizeof(uint32_t)*dword_len, (void **)&reg_ptr);
+  ...
+  
+  memcpy((void *)reg_ptr, (void *)datap, sizeof(uint32_t)*dword_len);
+  
+  ...
+}
+```
+
 
 ## Write Performance
 This app note includes a program called wc_perf. To build the program run make in the directory. This program will perform various write operations with and without WC enabled based on the options used. To see a list of the available options, type ```wc_perf -h```.
