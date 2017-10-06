@@ -176,7 +176,7 @@ DDR0
 ```
 The ```-w``` option tells ```wc_perf``` to use WC, and the number of write data beats was reduced from 16 to 1. This is the reason why writing a WC region with small operations is faster, because they are accumulated into larger chunks using a 64 byte buffer located in the CPU core bus interface (BIU). This is also the reason why it cannot be used for all accesses.
 
-Suppose instead of DDR memory there was a piece of hardware located at AppPF BAR4 that required individual writes to control particular functions. Instead of 16 individual writes, the hardware would only see a single access. Care must be taken when placing logic other than memory in a WC region, because the order of writes or number of writes does not match the application writes.
+Suppose instead of DDR memory there was a piece of hardware located at AppPF BAR4 that required individual writes to control particular functions. Instead of 16 individual writes, the hardware would only see a single access. Care must be taken when placing logic other than memory such as FIFOs in a WC region, because the order of writes or number of writes does not match the application writes.
 
 Finally, data being held in the WC buffer prior to being written is not guaranteed to be coherent. If a read is performed before the WC buffer is flushed, it may contain stall data.
 
@@ -190,6 +190,7 @@ PCI Device Drivers
 * https://www.kernel.org/doc/Documentation/PCI/pci.txt
 
 Intel Write Combining Info
+* https://www.intel.com/content/dam/www/public/us/en/documents/white-papers/pcie-burst-transfer-paper.pdf
 * http://download.intel.com/design/PentiumII/applnots/24442201.pdf
 
 ## Revision History
