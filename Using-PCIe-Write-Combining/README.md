@@ -128,7 +128,7 @@ Based on the data, writing to a WC region achieves almost 5GB/s for 1KB. Above 3
 
 ## A Few Words about Side Effects
 
-If WC is so great why don't we use it all the time?
+*If WC is so great why don't we use it all the time?*
 
 To understand why that is not a good idea, a closer look is needed. The ```fpga-describe-local-image``` command is used to dump FPGA metrics such as the number of data beats written to and read from DDR memory.
 
