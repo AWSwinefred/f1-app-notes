@@ -122,13 +122,52 @@ The graph and table show the write bandwidth with different sizes and function w
 
 ## A Few Words about Side Effects
 
-User vs Physical Space
-PCIS Interface
-DDR Counts
+If WC is so great why don't we use it all the time?
 
-Appendix
+To understand why that is not a good idea, a closer look is needed. The ```fpga-describe-local-image``` command is used to dump FPGA metrics such as the number of data beats written to and read from DDR memory.
 
-Application Note:
+```
+$ sudo fpga-describe-local-image -S 0 -C
+
+AFI          0       agfi-02948a33d1a0e9665  loaded            0        ok               0       0x071417d3
+AFIDEVICE    0       0x1d0f      0xf001      0000:00:0f.0
+
+...
+
+DDR0
+   write-count=16
+   read-count=0
+DDR1
+   write-count=0
+   read-count=0
+DDR2
+   write-count=0
+   read-count=0
+DDR3
+   write-count=0
+   read-count=0
+
+```
+The ```-C``` option tells the command to retrieve all the available metrics, display them, and reset them to zero. After dumping the metrics, run the following command:
+
+```
+$ sudo ./wc_perf
+```
+By default, ```wc_perf``` will write 16 UINT32 integers to DDR0 without using WC. Each write operation produces one data beat to the DDR 0 memory controller inside the CL. The data to the memory controller is 512 bits (64 bytes), but only 32 bits are used for each write, and this is why the DDR 0 write-count shows a value of 16.
+
+Next, run:
+```
+$ sudo ./wc_perf -w
+```
+Followed by:
+```
+$ sudo fpga-describe-local-image -S 0 -C
+...
+DDR0
+   write-count=1
+   read-count=0
+...
+```
 
 
 ## For Further Reading:
