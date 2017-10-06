@@ -61,7 +61,7 @@ The write bandwidth is determined dividing the total number of bytes transferred
       rc = clock_gettime(CLOCK_MONOTONIC, &ts_end);
 ```    
 
-As mentioned earlier, developer's are not required to use the FPGA library calls but may write their own. ```custom_move``` is an example.
+As mentioned earlier, developers are not required to use the FPGA library calls but may write their own. ```custom_move``` is an example.
 
 ```
 int custom_move(pci_bar_handle_t handle, uint64_t offset, uint32_t* datap, uint64_t dword_len) {
@@ -77,10 +77,10 @@ int custom_move(pci_bar_handle_t handle, uint64_t offset, uint32_t* datap, uint6
   ...
 }
 ```
-At the heart of the function, is a simple ```memcpy```. The destination address is obtained by a call to ```fpga_pci_get_address```.
+At the heart of the function, is a simple ```memcpy```. The destination address is obtained by calling ```fpga_pci_get_address``` with the pci_handle obtained from ```fpga_pci_attach``` along with the offset into the region.
 
 ## Write Performance
-This app note includes a program called wc_perf. To build the program run make in the directory. This program will perform various write operations with and without WC enabled based on the options used. To see a list of the available options, type ```wc_perf -h```.
+This app note includes a program called wc_perf. Run ```make``` in the app note directory to build the program. This program will perform various write operations with and without WC enabled based on the options used. To see a list of the available options, type ```wc_perf -h```.
 
 ![WC Performance Graph](./Write-Combine-Performance.png)
 
