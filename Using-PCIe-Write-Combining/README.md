@@ -168,7 +168,11 @@ DDR0
    read-count=0
 ...
 ```
+The ```-w``` option tells ```wc_perf``` to use WC, and the number of write data beats was reduced from 16 to 1. This is the reason why writing a WC region with small operations is faster, because they are accumulated into larger chunks using a 64 byte buffer. This is also the reason why it cannot be used for all accesses.
 
+Suppose instead of DDR memory there was a piece of hardware located at AppPF BAR4 that required individual writes to control particular functions. Instead of 16 individual writes, the hardware would only see a single access. Care must be taken when placing logic other than memory in a WC region.
+
+Finally, data being held in the WC buffer prior to being written is not guaranteed to be coherent. If a read is performed before the WC buffer is flushed, it may contain stall data.
 
 ## For Further Reading:
 The sysfs Filesystem
