@@ -81,6 +81,21 @@ At the heart of the function, is a simple ```memcpy```. The destination address 
 
 ## Write Performance
 This app note includes a program called wc_perf. Run ```make``` in the app note directory to build the program. This program will perform various write operations with and without WC enabled based on the options used. To see a list of the available options, type ```wc_perf -h```.
+```
+$ sudo ./wc_perf -h
+SYNOPSIS
+        wc_perf [options] [-h]
+Example: wc_perf -i 1024 -w
+DESCRIPTION
+        Writes bytes to AppPF BAR4 and reports the bandwidth in GB/s
+OPTIONS
+        -i num - Maximum number of integers to move.
+        -w     - Use WriteCombine region.
+        -c     - Use custom memory move.
+        -v     - Enable verbose mode.
+```
+
+The graph and table show the write bandwidth with different sizes and function with and without WC.
 
 ![WC Performance Graph](./Write-Combine-Performance.png)
 
