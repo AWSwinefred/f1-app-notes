@@ -4,7 +4,7 @@
 ## Version 1.0
 
 ## Introduction
-A developer has multiple ways to transfer data to a F1 accelerator. For large transfers (>1K), either the SH DMA or custom PCIM logic are good choices for transferring data from host memory to accelerator. For small transfers, the overhead of setting up a hardware-based data move is significant and may consume more time than simply writing the data directly to the accelerator. 
+A developer has multiple ways to transfer data to a F1 accelerator. For large transfers (>1KByte), either the SH DMA or custom PCIM logic are good choices for transferring data from host memory to accelerator. For small transfers, the overhead of setting up a hardware-based data move is significant and may consume more time than simply writing the data directly to the accelerator. 
 Write combining (WC) is a technique used to increase host write performance to non-cacheable PCIe devices. This application note describes when to use WC and how to take advantage of WC in software for a F1 accelerator. Write bandwidth benchmarks are included to show the performance improvements possible with WC.
 
 ## Concepts
