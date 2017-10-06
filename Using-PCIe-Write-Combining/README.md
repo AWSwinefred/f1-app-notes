@@ -99,10 +99,10 @@ The graph and table show the write bandwidth with different sizes and function w
 
 ![WC Performance Graph](./Write-Combine-Performance.png)
 
-*burst      fpga_pci_write_burst
-*burst-wc   fpga_pci_write_burst to a WC region
-*custom     custom move function
-*custom-wc  custom move function to a WC region
+-       burst      fpga_pci_write_burst
+-       burst-wc   fpga_pci_write_burst to a WC region
+-       custom     custom move function
+-       custom-wc  custom move function to a WC region
 
 | size (bytes) | burst | burst-wc | custom | custom-wc (GB/s) |
 | ---- | :---: | :---: | :---: | :---: |
