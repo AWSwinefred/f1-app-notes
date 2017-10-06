@@ -185,7 +185,10 @@ The sysfs Filesystem
 
 * https://www.kernel.org/pub/linux/kernel/people/mochel/doc/papers/ols-2005/mochel.pdf
 * https://www.kernel.org/doc/Documentation/filesystems/sysfs.txt
+PCI Device Drivers
 * https://www.kernel.org/doc/Documentation/PCI/pci.txt
+Intel Write Combining Info
+* http://download.intel.com/design/PentiumII/applnots/24442201.pdf
 
 ## Revision History
 
