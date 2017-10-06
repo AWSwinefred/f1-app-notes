@@ -53,7 +53,7 @@ opens the sysfs file: ```/sys/bus/pci/devices/0000:00:0f.0/resource4_wc``` and u
 
 The FPGA library call used to write a buffer of UINT32_t data is ```fpga_pci_write_burst```, but writing a custom function is possible.
 
-The write bandwidth is determined dividing the total number of bytes transferred divided by the time it takes for ```fpga_pci_write_burst``` to complete.
+The write bandwidth is calculated by dividing the total number of bytes transferred by the time it takes for ```fpga_pci_write_burst``` to complete.
 
 ```
       rc = clock_gettime(CLOCK_MONOTONIC, &ts_start);
