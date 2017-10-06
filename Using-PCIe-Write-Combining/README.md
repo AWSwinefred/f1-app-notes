@@ -10,12 +10,12 @@ Write combining (WC) is a technique used to increase host write performance to n
 ## Concepts
 The host’s 64-bit address map in a host is subdivided into regions. These regions have various attributes assigned to them by the hypervisor and operating system to control how a user program interacts with system memory and devices.
 
-This app note is focuses on two attributes: Non-Cacheable and Write-Combine. Data written to non-cacheable regions are not stored in a CPU’s cache to be written later (called WriteBack), but are written directly to the memory or device. For example, if a program writes a 32-bit value to a device mapped in a non-cacheable region, then the device will receive four data bytes. The hardware will generate all the appropriate strobes, masks, and shifts to ensure the bytes are placed on the correct byte lanes with the correct strobes. Depending on the bus hierarchies and protocols, single data accesses can be very slow (<< 1 GB/s), because they use only a portion of the available data bus capacity.
+This app note is focused on two attributes: Non-Cacheable and Write-Combine. Data written to non-cacheable regions are not stored in a CPU’s cache to be written later (called WriteBack), but are written directly to the memory or device. For example, if a program writes a 32-bit value to a device mapped in a non-cacheable region, then the device will receive four data bytes. The hardware will generate all the appropriate strobes, masks, and shifts to ensure the bytes are placed on the correct byte lanes with the correct strobes. Depending on the bus hierarchies and protocols, single data accesses can be very slow (<< 1 GB/s), because they use only a portion of the available data bus capacity.
 
 Using a region marked with the WC attribute can improve performance. Writes to a WC region will accumulate in a 64 byte buffer. Once the buffer is full or a flush event occurs (such as a write outside the 64 byte buffer range), a “combined” write to the device is performed. WC increases bus utilization, which results in higher performance.
 
 ## Accessing the AppPF Bar 4 Region
-The F1 Developer’s Kit includes a FPGA library that can be used access a F1 card. To run this example, launch an F1 instance, clone the aws-fpga Github repository, and download the latest [app note files].
+The F1 Developer’s Kit includes a FPGA library that can be used to access a F1 card. To run this example, launch an F1 instance, clone the aws-fpga Github repository, and download the latest [app note files].
 
 After sourcing the ./sdk_setup.sh file, use the fpga-load-local-image command to program the FPGA with the CL_DRAM_DMA AFI. (If you are running on a 16xL, program the FPGA in slot 0.)
 
@@ -41,7 +41,7 @@ The command will produce output similar to the following:
         Region 4: Memory at 5c000000000 (64-bit, prefetchable) [size=128G]
 ```
 
-Region 4 is where the card’s 64 GB of DDR memory is located. To gain access to this region, the memory must be mapped into the user address space of the application. The function, fpga_pci_attach, performs this operation and stores the information in a structure.
+Region 4 is where the card’s 64 GB of DDR memory is located. To gain access to this region, the memory must be mapped into the user address space of the application. The FPGA library's function, fpga_pci_attach, performs this operation and stores the information in a structure.
 ```
 rc = fpga_pci_attach(slot_id, pf_id, bar_id, write_combine, &pci_bar_handle);
 ```
