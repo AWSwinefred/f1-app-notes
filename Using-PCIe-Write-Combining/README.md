@@ -51,13 +51,17 @@ rc = fpga_pci_attach(0, 0, 4, BURST_CAPABLE, &pci_bar_handle);
 ```
 opens the sysfs file: ```/sys/bus/pci/devices/0000:00:0f.0/resource4_wc``` and uses ```mmap``` to create a user space pointer to Region 4 with a WC attribute. The returned pci_bar_handle structure is used by other FPGA library calls to read and write the F1 card.
 
+The FPGA library call used to write a buffer of UINT32_t data is ```fpga_pci_write_burst```, but writing a custom function is possible.
+
+The write bandwidth is determined dividing the total number of bytes transferred divided by the time it takes for ```fpga_pci_write_burst``` to complete.
+
 ```
       rc = clock_gettime(CLOCK_MONOTONIC, &ts_start);
-      fpga_pci_write_burst(pci_bar_handle, 0, buffer2, NUM_UINTS * j);
+      fpga_pci_write_burst(pci_bar_handle, 0, buffer, num_of_ints);
       rc = clock_gettime(CLOCK_MONOTONIC, &ts_end);
 ```    
 
-
+As mentioned earlier, developer's are not required to use the FPGA library calls but may write their own. ```custom_move``` is an example.
 
 ```
 int custom_move(pci_bar_handle_t handle, uint64_t offset, uint32_t* datap, uint64_t dword_len) {
@@ -73,7 +77,7 @@ int custom_move(pci_bar_handle_t handle, uint64_t offset, uint32_t* datap, uint6
   ...
 }
 ```
-
+At the heart of the function, is a simple ```memcpy```. The destination address is obtained by a call to ```fpga_pci_get_address```.
 
 ## Write Performance
 This app note includes a program called wc_perf. To build the program run make in the directory. This program will perform various write operations with and without WC enabled based on the options used. To see a list of the available options, type ```wc_perf -h```.
