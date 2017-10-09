@@ -4,7 +4,7 @@
 ## Version 1.0
 
 ## Introduction
-A developer has multiple ways to transfer data to a F1 accelerator. For large transfers (>1KByte), either the SH DMA or custom PCIM logic are good choices for transferring data from host memory to accelerator. For small transfers, the overhead of setting up a hardware-based data move is significant and may consume more time than simply writing the data directly to the accelerator. 
+A developer has multiple ways to transfer data to a F1 accelerator. For large transfers (>1KByte), either the Shell DMA or custom PCIM logic are good choices for transferring data from host memory to accelerator. For small transfers, the overhead of setting up a hardware-based data move is significant and may consume more time than simply writing the data directly to the accelerator. 
 Write combining (WC) is a technique used to increase host write performance to non-cacheable PCIe devices. This application note describes when to use WC and how to take advantage of WC in software for a F1 accelerator. Write bandwidth benchmarks are included to show the performance improvements possible with WC.
 
 ## Concepts
@@ -17,7 +17,7 @@ For example, if a program writes a 32-bit value to a device mapped in a non-cach
 Using a region marked with the WC attribute can improve performance. Writes to a WC region will accumulate in a 64 byte buffer. Once the buffer is full or a flush event occurs (such as a write outside the 64 byte buffer range), a “combined” write to the device is performed. WC increases bus utilization, which results in higher performance.
 
 ## Accessing the AppPF Bar 4 Region
-The F1 Developer’s Kit includes a FPGA library that can be used to access a F1 card. The library contains functions that simply accessing a F1 card. This app note uses a small subset. 
+The F1 Developer’s Kit includes a FPGA library that can be used to access a F1 card. The library contains functions that simplify accessing a F1 card. This app note uses a small subset. 
 
 To run this example, launch an F1 instance, clone the aws-fpga Github repository, and download the latest [app note files].
 
