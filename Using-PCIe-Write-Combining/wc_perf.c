@@ -46,12 +46,11 @@ int wc_perf(int slot, int pf_id, int bar_id);
 int initialize_log(char* log_name);
 int check_afi_ready(int slot);
 
-int NUM_UINTS = 1;
-int NUM_BUFFERS = 1;
+int num_of_uints = 16;
+//int NUM_BUFFERS = 1;
 int write_combine = 0;
 int use_custom = 0;
 int verbose = 0;
-int sweep = 0;
 
 /* Subtract timespec t2 from t1 */
 static void compute_delta(struct timespec *t1, const struct timespec *t2)
@@ -70,6 +69,17 @@ static void compute_delta(struct timespec *t1, const struct timespec *t2)
   
 }
 
+void print_usage() {
+  printf("SYNOPSIS\n\twc_perf [options] [-h]\n");
+  printf("Example: wc_perf -i 1024 -w\n");
+  printf("DESCRIPTION\n\tWrites bytes to AppPF BAR4 and reports the bandwidth in GB/s\n");
+  printf("OPTIONS\n");
+  printf("\t-i num - Maximum number of integers to move.\n");
+  printf("\t-w     - Use WriteCombine region.\n");
+  printf("\t-c     - Use custom memory move.\n");
+  printf("\t-v     - Enable verbose mode.\n");
+}
+
 int main(int argc, char **argv) {
   int rc;
   int slot_id;
@@ -86,13 +96,13 @@ int main(int argc, char **argv) {
   rc = check_afi_ready(slot_id);
   fail_on(rc, out, "AFI not ready");
   
-  while ((c = getopt(argc, argv, "hsvcwi:b:")) != -1)
+  while ((c = getopt(argc, argv, "hvcwi:")) != -1)
     switch (c) {
-    case 'b':
-      NUM_BUFFERS = atoi(optarg);
-      break;
+      //    case 'b':
+      //      NUM_BUFFERS = atoi(optarg);
+      //      break;
     case 'i':
-      NUM_UINTS = atoi(optarg);
+      num_of_uints = atoi(optarg);
       break;
     case 'w':
       write_combine = BURST_CAPABLE;
@@ -103,13 +113,12 @@ int main(int argc, char **argv) {
     case 'v':
       verbose = 1;
       break;
-    case 's':
-      sweep = 1;
-      break;
     case 'h':
+      print_usage();
+      exit(0);
+      break;
     default:
-      printf("wc_perf [options]\n");
-      abort();
+      exit(1);
       break;
     }
   
@@ -152,7 +161,8 @@ int custom_move(pci_bar_handle_t handle, uint64_t offset, uint32_t* datap, uint6
 int wc_perf(int slot_id, int pf_id, int bar_id) {
   struct timespec ts_start, ts_end;
   float GB_per_s;
-  uint32_t *buffer2 = NULL;
+  int num_of_bytes;
+  uint32_t *buffer = NULL;
   int rc;
   
   /* pci_bar_handle_t is a handler for an address space exposed by one PCI BAR on one of the PCI PFs of the FPGA */
@@ -169,33 +179,35 @@ int wc_perf(int slot_id, int pf_id, int bar_id) {
     rc = fpga_pci_attach(slot_id, pf_id, bar_id, write_combine, &pci_bar_handle);
     fail_on(rc, out, "Unable to attach to the AFI on slot id %d", slot_id);
 
-    buffer2 = (uint32_t *)calloc(NUM_UINTS * NUM_BUFFERS, sizeof(uint32_t));
+    buffer = (uint32_t *)calloc(num_of_uints, sizeof(uint32_t));
 
-    for(int j=1; j <= NUM_BUFFERS; j *= 2) {
+    for(int j=16; j <= num_of_uints; j *= 2) {
       
       /* grab start time */
       rc = clock_gettime(CLOCK_MONOTONIC, &ts_start);
 
       if (use_custom)
-	custom_move(pci_bar_handle, 0, buffer2, NUM_UINTS * j);
+	custom_move(pci_bar_handle, 0, buffer, j);
       else
-	fpga_pci_write_burst(pci_bar_handle, 0, buffer2, NUM_UINTS * j);
+	fpga_pci_write_burst(pci_bar_handle, 0, buffer, j);
     
       /* grab end time */
       rc = clock_gettime(CLOCK_MONOTONIC, &ts_end);
     
       compute_delta(&ts_end, &ts_start);
+      
+      num_of_bytes = sizeof(uint32_t) * j;
     
       if (verbose)
-	printf("time %ld.%09ld seconds (total) for last transfer of %lu bytes\n",
-	       ts_end.tv_sec, ts_end.tv_nsec, sizeof(uint32_t) * NUM_UINTS * j);
+	printf("time %ld.%09ld seconds for transfer of %u bytes\n",
+	       ts_end.tv_sec, ts_end.tv_nsec, num_of_bytes);
     
     
-      GB_per_s = (float)(sizeof(uint32_t) * NUM_UINTS * j) / (float)ts_end.tv_nsec;
+      GB_per_s = (float)num_of_bytes / (float)ts_end.tv_nsec;
       if (verbose)
 	printf("bandwidth %f GB/s\n", GB_per_s);
       else
-	printf("%lu\t%f\n", sizeof(uint32_t) * NUM_UINTS * j, GB_per_s);
+	printf("%u\t%f\n", num_of_bytes, GB_per_s);
     }
     
     
@@ -222,8 +234,7 @@ int check_afi_ready(int slot_id) {
     int rc;
 
     /* get local image description, contains status, vendor id, and device id. */
-    rc = fpga_mgmt_describe_local_image(slot_id, &info, FPGA_CMD_CLEAR_HW_METRICS);
-    //rc = fpga_mgmt_describe_local_image(slot_id, &info, 0);
+    rc = fpga_mgmt_describe_local_image(slot_id, &info, 0);
     fail_on(rc, out, "Unable to get AFI information from slot %d. Are you running as root?",slot_id);
 
     /* check to see if the slot is ready */
@@ -232,7 +243,8 @@ int check_afi_ready(int slot_id) {
         fail_on(rc, out, "AFI in Slot %d is not in READY state !", slot_id);
     }
 
-    printf("AFI PCI  Vendor ID: 0x%x, Device ID 0x%x\n",
+    if (verbose)
+      printf("AFI PCI  Vendor ID: 0x%x, Device ID 0x%x\n",
         info.spec.map[FPGA_APP_PF].vendor_id,
         info.spec.map[FPGA_APP_PF].device_id);
 
@@ -266,3 +278,4 @@ int check_afi_ready(int slot_id) {
 out:
     return 1;
 }
+
