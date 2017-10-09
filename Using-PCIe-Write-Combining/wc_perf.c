@@ -47,7 +47,6 @@ int initialize_log(char* log_name);
 int check_afi_ready(int slot);
 
 int num_of_uints = 16;
-//int NUM_BUFFERS = 1;
 int write_combine = 0;
 int use_custom = 0;
 int verbose = 0;
