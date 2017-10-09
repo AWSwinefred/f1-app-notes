@@ -12,7 +12,7 @@ The host’s 64-bit address map is subdivided into regions. These regions have v
 
 This app note is focused on two attributes: Non-Cacheable and Write-Combine and how to imrpove host-to-card write performance. Data written to non-cacheable regions are not stored in a CPU’s cache to be written later (called WriteBack), but are written directly to the memory or device.
 
-For example, if a program writes a 32-bit value to a device mapped in a non-cacheable region, then the device will receive four data bytes. The hardware will generate all the appropriate strobes, masks, and shifts to ensure the bytes are placed on the correct byte lanes with the correct strobes. Depending on the bus hierarchies and protocols, single data accesses can be very slow (<< 1 GB/s), because they use only a portion of the available data bus capacity.
+For example, if a program writes a 32-bit value to a device mapped in a non-cacheable region, then the device will receive immediately four data bytes. The hardware will generate all the appropriate strobes, masks, and shifts to ensure the bytes are placed on the correct byte lanes with the correct strobes. Depending on the bus hierarchies and protocols, single data accesses can be very slow (<< 1 GB/s), because they use only a portion of the available data bus capacity.
 
 Using a region marked with the WC attribute can improve performance. Writes to a WC region will accumulate in a 64 byte buffer. Once the buffer is full or a flush event occurs (such as a write outside the 64 byte buffer range), a “combined” write to the device is performed. WC increases bus utilization, which results in higher performance.
 
