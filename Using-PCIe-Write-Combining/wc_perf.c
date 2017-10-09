@@ -98,9 +98,6 @@ int main(int argc, char **argv) {
   
   while ((c = getopt(argc, argv, "hvcwi:")) != -1)
     switch (c) {
-      //    case 'b':
-      //      NUM_BUFFERS = atoi(optarg);
-      //      break;
     case 'i':
       num_of_uints = atoi(optarg);
       break;
