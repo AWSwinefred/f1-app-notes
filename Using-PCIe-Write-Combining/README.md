@@ -95,7 +95,7 @@ OPTIONS
         -v     - Enable verbose mode.
 ```
 
-The graph and table show the write bandwidth with different sizes and function with and without WC.
+The graph and table show the write bandwidth with different sizes and function with and without WC. _Please note the Y axis is the log of the bandwidth._
 
 ![WC Performance Graph](./Write-Combine-Performance.png)
 
