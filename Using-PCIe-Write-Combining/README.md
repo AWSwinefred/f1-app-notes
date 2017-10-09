@@ -45,7 +45,7 @@ Region 4 is where the card’s 64 GB of DDR memory is located. To gain access to
 ```
 rc = fpga_pci_attach(slot_id, pf_id, bar_id, write_combine, &pci_bar_handle);
 ```
-Four input arguments are necessary: (1) the slot number, (2) the physical function, (3) the bar/region, and (4) the write combining flag. The function uses these arguments to open the appropriate sysfs file. For example, calling the function with the following arguments, 
+Four input arguments are necessary: (1) the slot number, (2) the physical function, (3) the bar/region, and (4) the write combining flag. The function uses these arguments to open the appropriate sysfs file. The ```write_combine``` determines whether to select a region with or without the WC attribute. A F1 card has two regions capable of supporting WC: region 2 and 4. For example, calling the function with the following arguments, 
 ```
 rc = fpga_pci_attach(0, 0, 4, BURST_CAPABLE, &pci_bar_handle);
 ```
