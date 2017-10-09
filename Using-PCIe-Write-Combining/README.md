@@ -17,7 +17,9 @@ For example, if a program writes a 32-bit value to a device mapped in a non-cach
 Using a region marked with the WC attribute can improve performance. Writes to a WC region will accumulate in a 64 byte buffer. Once the buffer is full or a flush event occurs (such as a write outside the 64 byte buffer range), a “combined” write to the device is performed. WC increases bus utilization, which results in higher performance.
 
 ## Accessing the AppPF Bar 4 Region
-The F1 Developer’s Kit includes a FPGA library that can be used to access a F1 card. To run this example, launch an F1 instance, clone the aws-fpga Github repository, and download the latest [app note files].
+The F1 Developer’s Kit includes a FPGA library that can be used to access a F1 card. The library contains functions that simply accessing a F1 card. This app note uses a small subset. 
+
+To run this example, launch an F1 instance, clone the aws-fpga Github repository, and download the latest [app note files].
 
 After sourcing the ./sdk_setup.sh file, use the fpga-load-local-image command to program the FPGA with the CL_DRAM_DMA AFI. (If you are running on a 16xL, program the FPGA in slot 0.)
 
