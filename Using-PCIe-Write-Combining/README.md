@@ -182,7 +182,7 @@ The ```-w``` option tells ```wc_perf``` to use WC, and the number of write data 
 
 Suppose instead of DDR memory there was a piece of hardware located at AppPF BAR4 that required individual writes to control particular functions. The hardware would only see a single access with WC enabled instead of 16 individual writes. Care must be taken when placing logic other than memory such as FIFOs in a WC region, because the order or number of writes does not match the application writes.
 
-Finally, data being held in the WC buffer prior to being written is not guaranteed to be coherent. If a read is performed before the WC buffer is flushed, it may contain stall data.
+Finally, data being held in the WC buffer prior to being written is not guaranteed to be coherent. If a read is performed before the WC buffer is flushed, it may contain stale data.
 
 ## For Further Reading:
 The sysfs Filesystem
