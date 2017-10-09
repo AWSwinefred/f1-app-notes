@@ -49,7 +49,7 @@ Four input arguments are necessary: (1) the slot number, (2) the physical functi
 ```
 rc = fpga_pci_attach(0, 0, 4, BURST_CAPABLE, &pci_bar_handle);
 ```
-opens the sysfs file: ```/sys/bus/pci/devices/0000:00:0f.0/resource4_wc``` and uses ```mmap``` to create a user space pointer to Region 4 with a WC attribute. The returned pci_bar_handle structure is used by other FPGA library calls to read and write the F1 card.
+opens the sysfs file: ```/sys/bus/pci/devices/0000:00:0f.0/resource4_wc``` and uses ```mmap``` to create a user space pointer to Region 4 with a WC attribute. The ```BURST_CAPABLE``` enum is part of the F1 FPGA library. To omit the WC attribute, set the ```write_combine``` argument to ``0```. The returned pci_bar_handle structure is used by other FPGA library calls to read and write the F1 card.
 
 The FPGA library call used to write a buffer of UINT32_t data is ```fpga_pci_write_burst```, but writing a custom function is possible.
 
