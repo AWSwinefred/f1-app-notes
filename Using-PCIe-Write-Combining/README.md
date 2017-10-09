@@ -8,7 +8,7 @@ A developer has multiple ways to transfer data to a F1 accelerator. For large tr
 Write combining (WC) is a technique used to increase host write performance to non-cacheable PCIe devices. This application note describes when to use WC and how to take advantage of WC in software for a F1 accelerator. Write bandwidth benchmarks are included to show the performance improvements possible with WC.
 
 ## Concepts
-The host’s 64-bit address map in a host is subdivided into regions. These regions have various attributes assigned to them by the hypervisor and operating system to control how a user program interacts with system memory and devices.
+The host’s 64-bit address map is subdivided into regions. These regions have various attributes assigned to them by the hypervisor and operating system to control how a user program interacts with system memory and devices.
 
 This app note is focused on two attributes: Non-Cacheable and Write-Combine. Data written to non-cacheable regions are not stored in a CPU’s cache to be written later (called WriteBack), but are written directly to the memory or device. For example, if a program writes a 32-bit value to a device mapped in a non-cacheable region, then the device will receive four data bytes. The hardware will generate all the appropriate strobes, masks, and shifts to ensure the bytes are placed on the correct byte lanes with the correct strobes. Depending on the bus hierarchies and protocols, single data accesses can be very slow (<< 1 GB/s), because they use only a portion of the available data bus capacity.
 
