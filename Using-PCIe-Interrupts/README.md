@@ -1,51 +1,13 @@
 
 ## F1 FPGA Application Note
-# How to Use the PCIM AXI Port
+# How to Use PCIe Interrupts
 ## Version 1.0
 
 ## Introduction
-The purpose of this application note is to provide the F1 developer with additional information when implementing a Custom Logic (CL) that uses the PCIM AXI port to transfer data between the card and host memory. A small device driver is presented that illustrates the basic requirements to control a hardware module connected to the PCIM port.
+
 
 ## Concepts
-To perform large data moves (>1KB) between the CL and host, the developer can use the DMA hardware located in the Shell (SH) or implement logic in the CL. The SH DMA is well-suited for linear data transfer, and the F1 Developer’s Kit comes with a compatible device driver. If your application does not perform large linear data transfers or contains DMA logic already, then using the PCIM AXI port is an alternative solution.
-To use the PCIM AXI port effectively, the following concepts are important:
--	Virtual to Physical Address Translation
--	PCIM AXI Restrictions
--	Accessing CL Registers from Software
 
-This application note uses the CL_DRAM_DMA example to demonstrate these concepts. The example contains an Automatic Test Pattern Generator (ATG) that is connected to the PCIM port. The ATG is able to write, read, and compare data located in host memory.
-Before accessing host memory, software must obtain its physical address and program this address into the ATG. 
-
-### Virtual to Physical Address Translation
-
-Every memory location in an operating system (OS) has at least two addresses: a virtual address and a physical address. Applications running in user space reference memory using virtual addresses, which enables to the OS to host multiple applications. 
-
-The operating system typically handles memory allocation and virtualization in 4KB chunks called pages. Of course an application can allocate memory buffers that are many times larger than 4KB, and from an application’s perspective, the addresses used by the application to access the memory are contiguous. In reality, the physical locations of the pages may be scattered throughout physical memory.
-
-The F1 SH contains hardware to enforce isolation between guess OSes, so that a CL cannot read or write data from another OS. In order for data to move between the application’s user space and the F1 card, software is required to request the physical address of server (host) memory. The physical address may be used by logic in the CL to read/write memory via the PCIM port.
-
-One of the simplest methods is to call ```virt_to_phys()``` to obtain the physical address of a memory buffer. This kernel function takes the address of a 4KB page and uses the MMU page table entries to locate the physical address of the page. The number of calls to ```virt_to_phys()``` should be minimized to improvement driver performance.
-
-When the ATG device driver is opened a 4KB region is allocated. Reading and writing the device file will read and write this memory buffer.
- 
-For simplicity, the device driver is contained in a single file and assumes the CL_DRAM_DMA is loaded in the FPGA. The code provided is for demonstration purposes only. Take a moment to study the [code](./f3fbb176cfa44bf73b4c201260f52f25#file-atg_driver-c). A production device driver will require additional error checking and device management code.
-
-### PCIM AXI Restrictions
-
-Three reasons exist the PCIM AXI restrictions. First, multiple operating systems are present on a single host. Second, communication between the host and card is over a PCIe interface. And third, the AMBA protocol is used. The following transaction restrictions are placed on the PCIM AXI port:
--	All transactions must use a size of 64 bytes per beat (AxSIZE = 6).
--	All transactions larger than 64 bits must have contiguous byte enables.
--	A transaction must not cross a 4KB address boundary.
--	A transaction must remain within the OS memory space.
--	A transaction must complete within 8 us.
--	A transaction must remain within a set of predetermined address ranges.
-
-If any of these restrictions are violated, monitoring logic located in the SH will terminate the transaction, and error counters are incremented to log the violation.
-Examining each of the restrictions in detail is beyond the scope of this application note; therefore, only the timeout and address restrictions are described.
-
-A timeout error is logged when a transaction fails (or takes too long) to complete. The timeout threshold is set at 8us. A PCIM transaction must complete before the timer expires. If it does not, the PCIe transaction will be forcibly completed by SH logic. The values read or written to host memory must be considered undefined, and depending of the CL, the developer may need to reset/re-initialize their CL after a timeout error. 
-
-An address error is logged if a PCIM transaction points to an address which is not contained within the OS memory space, or the Bus Mater Enable bit is disabled in the device's configuration space.
 
 ### Accessing CL Registers from Software
 
@@ -53,19 +15,19 @@ The intended purpose of the OCL port is to connect a CL's control/status registe
 
 ```
   // Retrieve the device specific information about the card
-  atg_dev = pci_get_domain_bus_and_slot(DOMAIN, BUS, PCI_DEVFN(slot,FUNCTION));
+  f1_dev = pci_get_domain_bus_and_slot(DOMAIN, BUS, PCI_DEVFN(slot,FUNCTION));
 
   ...
   // Initialize the card
-  result = pci_enable_device(atg_dev);
+  result = pci_enable_device(f1_dev);
 
   ...
   // Mark the region as owned
-  result = pci_request_region(atg_dev, OCL_BAR, "OCL Region");
+  result = pci_request_region(f1_dev, OCL_BAR, "OCL Region");
 
   ...
   // Map the entire BAR 0 region into the driver's address space
-  ocl_base = (void __iomem *)pci_iomap(atg_dev, OCL_BAR, 0);   // BAR=0 (OCL), maxlen = 0 (map entire bar)
+  ocl_base = (void __iomem *)pci_iomap(f1_dev, OCL_BAR, 0);   // BAR=0 (OCL), maxlen = 0 (map entire bar)
 
 ```
 All OCL addresses are relative to the starting address of the BAR.
@@ -110,11 +72,11 @@ $ make test       # compiles the test program
 ```
 Now we are ready to install the device driver. Type the following command:
 ```
-$ sudo insmod atg_driver.ko slot=0x0f           # 16xl
+$ sudo insmod f1_driver.ko slot=0x0f           # 16xl
 ```
 Or
 ```
-$ sudo insmod atg_driver.ko slot=0x1d           # 2xl
+$ sudo insmod f1_driver.ko slot=0x1d           # 2xl
 ```
 You should not see any errors and it should silently return to the command prompt. To check to see if the driver loaded, type:
 ```
@@ -125,16 +87,16 @@ This command will print the message buffer from the kernel. Since the device dri
 [ 6727.147510] Installing atg module
 [ 6727.153025] vendor: 1d0f, device: f001
 [ 6727.156472] Enable result: 0
-[ 6727.165227] The atg_driver major number is: 247
+[ 6727.165227] The f1_driver major number is: 247
 ```
-The atg_driver will load and an unused major number will be assigned by the OS. Please use the major number (247 is this example) when creating the device special file:
+The f1_driver will load and an unused major number will be assigned by the OS. Please use the major number (247 is this example) when creating the device special file:
 ```
-$ sudo mknod /dev/atg_driver c 247 0
+$ sudo mknod /dev/f1_driver c 247 0
 ```
 You will not need to create this device file again unless you reboot your instance.
 You can now run the test:
 ```
-$ sudo ./atg_test
+$ sudo ./f1_test
 msg_result: This is a test
 msg_result: DCBAECBAFCBAGCB      # expected result
 ```
@@ -216,7 +178,7 @@ DDR3
 ```
 *Figure 2. fpga-describe-local-image Metrics Dump*
 
-To understand how to access CL registers mapped on the OCL interface, take a look at the poke_ocl and peek_ocl functions in the [atg_driver.c](./f3fbb176cfa44bf73b4c201260f52f25#file-atg_driver-c) file.
+To understand how to access CL registers mapped on the OCL interface, take a look at the poke_ocl and peek_ocl functions in the [f1_driver.c](./f3fbb176cfa44bf73b4c201260f52f25#file-f1_driver-c) file.
 ```
 static void poke_ocl(unsigned int offset, unsigned int data) {
   unsigned int *phy_addr = (unsigned int *)(ocl_base + offset);
