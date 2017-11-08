@@ -84,99 +84,6 @@ $ dmesg
 ```
 This command will print the message buffer from the kernel. Since the device driver is a kernel module, special prints are used to place messages in this buffer. You should see something similar to the following:
 ```
-[ 6727.147510] Installing atg module
-[ 6727.153025] vendor: 1d0f, device: f001
-[ 6727.156472] Enable result: 0
-[ 6727.165227] The f1_driver major number is: 247
-```
-The f1_driver will load and an unused major number will be assigned by the OS. Please use the major number (247 is this example) when creating the device special file:
-```
-$ sudo mknod /dev/f1_driver c 247 0
-```
-You will not need to create this device file again unless you reboot your instance.
-You can now run the test:
-```
-$ sudo ./f1_test
-msg_result: This is a test
-msg_result: DCBAECBAFCBAGCB      # expected result
-```
-The two prints are output by the test program snippet shown in Figure 1. The test program copies a string to the device driver buffer using the ```pwrite()```. The first line is simply a read of the buffer and a print of its contents using ```pread()```. The CL was not accessed.
-The second ```pwrite()``` uses a non-zero offset. This is detected by device driver and is used to run ATG logic. The logic overwrites the buffer with a test pattern. This time when the buffer is read, the test pattern is returned. 
-```
-  // write msg == read msg
-  pwrite(fd, test_msg, sizeof(test_msg), 0);
-  pread(fd, msg_result, sizeof(test_msg), 0);
-  printf("msg_result: %s\n", msg_result);
-
-  // write msg != read msg
-  pwrite(fd, test_msg, sizeof(test_msg), 0x100);
-  pread(fd, msg_result, sizeof(test_msg), 0);
-  printf("msg_result: %s\n", msg_result);
-```
-*Figure 1. ATG Test Program Body*
-
-With normal file I/O, the ```pwrite/pread``` offset argument is used to move the file pointer to various locations within the file. In this example the offset argument is used by the device driver to enable a different behavior. For your application, you may use the offset to program different addresses within the CL.
-
-During development of your device driver and CL, it is a good idea to periodically check the FPGA metrics to look for errors. Simply, type:
-```
-$ sudo fpga-describe-local-image -S 0 –M
-```
-Figure 2 shows an example where the PCIM generated a Bus Master Enable error caused when the CL accessed an invalid address. The ```pcim-axi-protocol-bus-master-enable-error``` field is set along with the error address and count.
-
-To clear the counters, type:
-```
-$ sudo fpga-describe-local-image -S 0 –C
-```
-
-```
-AFI          0       agfi-02948a33d1a0e9665  loaded            0        ok               0       0x071417d3
-AFIDEVICE    0       0x1d0f      0xf001      0000:00:0f.0
-sdacl-slave-timeout=0
-virtual-jtag-slave-timeout=0
-ocl-slave-timeout=0
-bar1-slave-timeout=0
-dma-pcis-timeout=0
-pcim-range-error=0
-pcim-axi-protocol-error=1
-pcim-axi-protocol-4K-cross-error=0
-pcim-axi-protocol-bus-master-enable-error=1
-pcim-axi-protocol-request-size-error=0
-pcim-axi-protocol-write-incomplete-error=0
-pcim-axi-protocol-first-byte-enable-error=0
-pcim-axi-protocol-last-byte-enable-error=0
-pcim-axi-protocol-bready-error=0
-pcim-axi-protocol-rready-error=0
-pcim-axi-protocol-wchannel-error=0
-sdacl-slave-timeout-addr=0x0
-sdacl-slave-timeout-count=0
-virtual-jtag-slave-timeout-addr=0x0
-virtual-jtag-slave-timeout-count=0
-ocl-slave-timeout-addr=0x0
-ocl-slave-timeout-count=0
-bar1-slave-timeout-addr=0x0
-bar1-slave-timeout-count=0
-dma-pcis-timeout-addr=0x0
-dma-pcis-timeout-count=0
-pcim-range-error-addr=0x0
-pcim-range-error-count=0
-pcim-axi-protocol-error-addr=0x85000
-pcim-axi-protocol-error-count=4
-pcim-write-count=2
-pcim-read-count=0
-DDR0
-   write-count=0
-   read-count=0
-DDR1
-   write-count=0
-   read-count=0
-DDR2
-   write-count=0
-   read-count=0
-DDR3
-   write-count=0
-   read-count=0
-```
-*Figure 2. fpga-describe-local-image Metrics Dump*
 
 To understand how to access CL registers mapped on the OCL interface, take a look at the poke_ocl and peek_ocl functions in the [f1_driver.c](./f3fbb176cfa44bf73b4c201260f52f25#file-f1_driver-c) file.
 ```
@@ -205,5 +112,5 @@ The ocl_base variable holds the starting address of the OCL BAR and is found by 
 
 |     Date      | Version |     Revision    |   Shell    |   Developer   |
 | ------------- |  :---:  | --------------- |   :---:    |     :---:     |
-| Aug. 21, 2017 |   1.0   | Initial Release | 0x071417d3 | W. Washington |
+|  Nov. 8, 2017 |   1.0   | Initial Release | 0x071417d3 | W. Washington |
 
