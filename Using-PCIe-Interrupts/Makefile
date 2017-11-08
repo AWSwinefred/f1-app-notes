@@ -1,18 +1,3 @@
-#
-# Copyright 2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
-#
-# Licensed under the Amazon Software License (the "License"). You may not use
-# this file except in compliance with the License. A copy of the License is
-# located at
-#
-#    http://aws.amazon.com/asl/
-#
-# or in the "license" file accompanying this file. This file is distributed on
-# an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, express or
-# implied. See the License for the specific language governing permissions and
-# limitations under the License.
-
-
 obj-m += f1_driver.o
 
 all:
@@ -22,5 +7,16 @@ clean:
 	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) clean
 
 test:
-	gcc -std=gnu99 -o f1_test f1_test.c 
+	gcc -std=gnu99 -o f1_test f1_test.c
+
+
+reload:
+	sudo fpga-clear-local-image -S 0
+	sudo fpga-load-local-image -S 0 -I agfi-09c2a21805a8b9257
+	sudo fpga-clear-local-image -S 0
+	sudo fpga-load-local-image -S 0 -I agfi-02948a33d1a0e9665 
+
+
+status:
+	sudo lspci -vvv -xxx -s 0000:00:0f.0
 

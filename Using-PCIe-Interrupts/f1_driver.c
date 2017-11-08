@@ -40,7 +40,7 @@
 #include <linux/pci.h>
 
 #include <linux/slab.h>
-
+#include <linux/interrupt.h>
 
 
 MODULE_AUTHOR("Winefred Washington <winefred@amazon.com>");
@@ -76,7 +76,11 @@ struct file_operations f1_fops = {
 };
 
 struct msix_entry f1_ints[] = {
-  {.vector = 0, .entry = 3}
+  {.vector = 0, .entry = 0},
+  {.vector = 0, .entry = 1},
+  {.vector = 0, .entry = 2},
+  {.vector = 0, .entry = 3},
+  {.vector = 0, .entry = 4}
 };
   
 int f1_major = 0;
@@ -85,6 +89,7 @@ unsigned char *f1_buffer;
 unsigned char *phys_f1_buffer;
 
 struct pci_dev *f1_dev;
+int f1_dev_id;
 
 void __iomem *ocl_base;
 
@@ -131,6 +136,11 @@ static unsigned int peek_ocl(unsigned int offset) {
 
 static unsigned int test_pattern;
 
+static irqreturn_t f1_isr(int a, void *dev_id) {
+  printk(KERN_NOTICE "f1_isr\n");
+  return IRQ_HANDLED;
+}
+  
 static void run_f1 (void) {
     unsigned int data;
     unsigned int status;
@@ -245,9 +255,14 @@ static int __init f1_init(void) {
   test_pattern = 0x44434241;  // initialize test_pattern
 
   // allocate MSIX resources
-  result = pci_enable_msix(f1_dev, f1_ints, 1);
+  result = pci_enable_msix(f1_dev, f1_ints, 5);
   printk(KERN_NOTICE "pci_enable_msix result: %x, %x\n", result, f1_ints[0].vector);
   
+  request_irq(f1_ints[0].vector, f1_isr, 0, "f1_driver", &f1_dev_id);
+  request_irq(f1_ints[1].vector, f1_isr, 0, "f1_driver", &f1_dev_id);
+  request_irq(f1_ints[2].vector, f1_isr, 0, "f1_driver", &f1_dev_id);
+  request_irq(f1_ints[3].vector, f1_isr, 0, "f1_driver", &f1_dev_id);
+  request_irq(f1_ints[4].vector, f1_isr, 0, "f1_driver", &f1_dev_id);
   
   return 0;
 
@@ -257,6 +272,8 @@ static void __exit f1_exit(void) {
 
   cdev_del(kernel_cdev);
 
+  free_irq(f1_ints[0].vector, &f1_dev_id);
+  
   // free up MSIX resources
   pci_disable_msix(f1_dev);
   
