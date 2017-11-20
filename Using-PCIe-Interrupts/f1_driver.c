@@ -178,8 +178,9 @@ static void __exit f1_exit(void) {
   //  free_irq(f1_ints[1].vector, f1_dev_id_1);
   for(i=0; i<NUM_OF_USER_INTS; i++) {
     free_irq(f1_ints[i].vector, f1_dev_id[i]);
+    kfree(f1_dev_id[i]);
   }
-
+  
   // free up MSIX resources
   pci_disable_msix(f1_dev);
   
