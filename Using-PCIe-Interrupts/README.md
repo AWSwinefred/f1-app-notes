@@ -114,20 +114,10 @@ The command will produce output similar to the following:
 ```
 Notice the Capabilities register [60]. It shows that MSI-X functionality is disabled.
 
-```
-        Capabilities: [60] MSI-X: Enable+ Count=33 Masked-
-                Vector table: BAR=2 offset=00008000
-                PBA: BAR=2 offset=00008fe0
-
-```
-
-Check to make sure the output displays ```MSI-X: Enable+```. This indicates that MSI-X functionality is enabled.
-
-
 Next, compile the ATG device driver and test program.
 ```
-$ make            # compiles the device driver
-$ make test       # compiles the test program
+$ make                     # compiles the device driver
+$ make -f f1_test.mk       # compiles the test program
 ```
 Now we are ready to install the device driver. Type the following command:
 ```
@@ -141,6 +131,21 @@ You should not see any errors and it should silently return to the command promp
 ```
 $ dmesg
 ```
+
+This command will print the message buffer from the kernel. Since the device driver is a kernel module, special prints are used to place messages in this buffer.
+
+Rerun the lspci command and you should see that MSI-X was enabled by the driver.
+
+```
+        Capabilities: [60] MSI-X: Enable+ Count=33 Masked-
+                Vector table: BAR=2 offset=00008000
+                PBA: BAR=2 offset=00008fe0
+
+```
+
+Check to make sure the output displays ```MSI-X: Enable+```. This indicates that MSI-X functionality is enabled.
+
+
 This command will print the message buffer from the kernel. Since the device driver is a kernel module, special prints are used to place messages in this buffer. You should see something similar to the following:
 ```
 
