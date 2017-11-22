@@ -63,33 +63,8 @@ struct msix_entry f1_ints[] = {
     
 ```
 
-#### Accessing CL Registers from Software
+### Compiling and Loading the F1 Interrupt Driver
 
-The intended purpose of the OCL port is to connect a CL's control/status registers to the PCIe bus. When the F1 card is enumerated the registers are placeed into BAR 0. In order to access these registers, they must be mapped into the device driver's address space. To do this requires four function calls.
-
-```
-  // Retrieve the device specific information about the card
-  f1_dev = pci_get_domain_bus_and_slot(DOMAIN, BUS, PCI_DEVFN(slot,FUNCTION));
-
-  ...
-  // Initialize the card
-  result = pci_enable_device(f1_dev);
-
-  ...
-  // Mark the region as owned
-  result = pci_request_region(f1_dev, OCL_BAR, "OCL Region");
-
-  ...
-  // Map the entire BAR 0 region into the driver's address space
-  ocl_base = (void __iomem *)pci_iomap(f1_dev, OCL_BAR, 0);   // BAR=0 (OCL), maxlen = 0 (map entire bar)
-
-```
-All OCL addresses are relative to the starting address of the BAR.
-
-
-
-
-### Compiling and Running the ATG Device Driver
 To run this example, launch an F1 instance, clone the aws-fpga Github repository, and download the latest [app note files](./f3fbb176cfa44bf73b4c201260f52f25).
 
 Use the ```fpga-load-local-image``` command to load the FPGA with the CL_DRAM_DMA AFI. *(If you are running on a 16xL, load the AFI into slot 0.)*
@@ -104,23 +79,50 @@ $ sudo lspci -vv -s 0000:00:1d.0  # 2xL
 ```
 The command will produce output similar to the following:
 ```
+
 00:0f.0 Memory controller: Device 1d0f:f001
         Subsystem: Device fedc:1d51
         Physical Slot: 15
-        Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx-
+        Control: I/O- Mem+ BusMaster- SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx-
         Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
-        Latency: 0
         Region 0: Memory at c4000000 (32-bit, non-prefetchable) [size=32M]
         Region 1: Memory at c6000000 (32-bit, non-prefetchable) [size=2M]
         Region 2: Memory at 5e000410000 (64-bit, prefetchable) [size=64K]
         Region 4: Memory at 5c000000000 (64-bit, prefetchable) [size=128G]
+        Capabilities: [40] Power Management version 3
+                Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot-,D3cold-)
+                Status: D0 NoSoftRst+ PME-Enable- DSel=0 DScale=0 PME-
+        Capabilities: [60] MSI-X: Enable- Count=33 Masked-
+                Vector table: BAR=2 offset=00008000
+                PBA: BAR=2 offset=00008fe0
+        Capabilities: [70] Express (v2) Endpoint, MSI 00
+                DevCap: MaxPayload 1024 bytes, PhantFunc 0, Latency L0s <64ns, L1 <1us
+                        ExtTag+ AttnBtn- AttnInd- PwrInd- RBE+ FLReset-
+                DevCtl: Report errors: Correctable- Non-Fatal- Fatal- Unsupported-
+                        RlxdOrd+ ExtTag- PhantFunc- AuxPwr- NoSnoop+
+                        MaxPayload 128 bytes, MaxReadReq 512 bytes
+                DevSta: CorrErr- UncorrErr- FatalErr- UnsuppReq- AuxPwr- TransPend-
+                LnkCap: Port #0, Speed 8GT/s, Width x16, ASPM not supported, Exit Latency L0s unlimited, L1 unlimited
+                        ClockPM- Surprise- LLActRep- BwNot- ASPMOptComp+
+                LnkCtl: ASPM Disabled; RCB 64 bytes Disabled- CommClk-
+                        ExtSynch- ClockPM- AutWidDis- BWInt- AutBWInt-
+                LnkSta: Speed 8GT/s, Width x16, TrErr- Train- SlotClk+ DLActive- BWMgmt- ABWMgmt-
+                DevCap2: Completion Timeout: Range BC, TimeoutDis+, LTR-, OBFF Not Supported
+                DevCtl2: Completion Timeout: 50us to 50ms, TimeoutDis-, LTR-, OBFF Disabled
+                LnkSta2: Current De-emphasis Level: -6dB, EqualizationComplete+, EqualizationPhase1+
+                         EqualizationPhase2+, EqualizationPhase3+, LinkEqualizationRequest-
+```
+Notice the Capabilities register [60]. It shows that MSI-X functionality is disabled.
+
+```
+        Capabilities: [60] MSI-X: Enable+ Count=33 Masked-
+                Vector table: BAR=2 offset=00008000
+                PBA: BAR=2 offset=00008fe0
+
 ```
 
-Check to make sure the output displays ```BusMaster+```. This indicates that the device is allowed to perform bus mastering operations. It is not unusual to have the Bus Master Enable turned off, ```BusMaster-```, by the OS when loading or unload a device driver or after an error. If the Bus Master Enable is disabled, it can be enabled again by typing:
-```
-$ sudo setpci -v -s 0000:00:0f.0 COMMAND=06
-```
-The OCL interface is mapped to Region 0. Accesses to this region will produce AXI transactions at the OCL port of the CL. The ATG registers are located in this region.
+Check to make sure the output displays ```MSI-X: Enable+```. This indicates that MSI-X functionality is enabled.
+
 
 Next, compile the ATG device driver and test program.
 ```
@@ -156,6 +158,33 @@ static unsigned int peek_ocl(unsigned int offset) {
 }
 ```
 The ocl_base variable holds the starting address of the OCL BAR and is found by using ```pci_iomap()```.
+
+#### Accessing CL Registers from Software
+
+The intended purpose of the OCL port is to connect a CL's control/status registers to the PCIe bus. When the F1 card is enumerated the registers are placeed into BAR 0. In order to access these registers, they must be mapped into the device driver's address space. To do this requires four function calls.
+
+```
+  // Retrieve the device specific information about the card
+  f1_dev = pci_get_domain_bus_and_slot(DOMAIN, BUS, PCI_DEVFN(slot,FUNCTION));
+
+  ...
+  // Initialize the card
+  result = pci_enable_device(f1_dev);
+
+  ...
+  // Mark the region as owned
+  result = pci_request_region(f1_dev, OCL_BAR, "OCL Region");
+
+  ...
+  // Map the entire BAR 0 region into the driver's address space
+  ocl_base = (void __iomem *)pci_iomap(f1_dev, OCL_BAR, 0);   // BAR=0 (OCL), maxlen = 0 (map entire bar)
+
+```
+All OCL addresses are relative to the starting address of the BAR.
+
+
+
+
 
 ## For Further Reading
 
