@@ -52,7 +52,7 @@ Once interrupts are allocated in the kernel, ```request_irq``` called is needed 
 ```
 
 ### Configuring Interrupts in the PCIe DMA Subsystem
-The snippet of code shown below runs from user space and programs the PCIe block to handle interrupts. Each user interrupt can be programmed to point to a different interrupt vector.
+The snippet of code shown below runs from user space and programs the PCIe block to handle interrupts. At reset, the interrupt vector registers all point to index 0. For this example, each user interrupt is programmed to point to a different interrupt vector to illustrate using all 16 entries.
 
 ```
     // Enable Interrupt Mask (This step seems a little backwards.)    
