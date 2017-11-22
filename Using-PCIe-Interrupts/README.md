@@ -17,7 +17,7 @@ Each of these interrupts may call a different ISR, or one or more of the interru
 
 When the device wants to send an interrupt the SH PCIe block is notified by asserting one of 16 user-interrupt signals. The PCIe will acknowledge the interrupt by asserting the acknowledge signal. The PCIe block will issue a MSI-X message to the PCIe bridge located in the server, and the bridge notifies the CPU.
 
-Before using interrupts, must be [configured in the PCIe block](#configuring-interrupts-in-the-pcie-dma-subsystem), [enabled in PCIe configuration space](#enabling-interrupts-in-pcie-configuration-space), and [registered with the kernel](#registering-interrupts-with-the-kernel).
+Before using interrupts, must be [enabled in PCIe configuration space](#enabling-interrupts-in-pcie-configuration-space), [configured in the PCIe block](#configuring-interrupts-in-the-pcie-dma-subsystem), and [registered with the kernel](#registering-interrupts-with-the-kernel).
 
 ### Configuring Interrupts in the PCIe DMA Subsystem
 
