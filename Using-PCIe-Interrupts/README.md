@@ -21,6 +21,8 @@ Before using interrupts, they must be [enabled in PCIe configuration space](#ena
 
 ### Enabling Interrupts in PCIe Configuration Space
 
+MSI-X functionality is enabled using the ```pci_enable_msix``` function. It requires a pointer to the device's PCI data structure, a table to map kernel vector numbers to device interrupts, and number of interrupts are being allocated in the kernel.
+
 ```
 #define NUM_OF_USER_INTS 16
 
@@ -38,6 +40,7 @@ struct msix_entry f1_ints[] = {
 
 ### Registering Interrupts with the Kernel
 
+Once interrupts are allocated in the kernel, ```request_irq``` called is needed to connect a specific interrupt to a specific ISR. In this example all 16 interrupt sources point to the same ISR, ```f1_isr```. To differentiate between the interrupt sources, an unique structure (a pointer to an integer) is registered with the vector. It ISR can retrieve this structure when it is called.
 
 ```
   for(i=0; i<NUM_OF_USER_INTS; i++) {
@@ -61,6 +64,23 @@ struct msix_entry f1_ints[] = {
     rc |= fpga_pci_poke(dma_bar_handle, dma_reg_addr(IRQ_TGT, 0, 0x088), 0x0b0a0908);
     rc |= fpga_pci_poke(dma_bar_handle, dma_reg_addr(IRQ_TGT, 0, 0x08c), 0x0f0e0d0c);
     
+```
+
+## A Barebones ISR
+
+```
+static irqreturn_t f1_isr(int a, void *dev_id) {
+  unsigned long flags;
+
+  spin_lock_irqsave(&f1_isr_lock, flags);
+  
+  printk(KERN_NOTICE "f1_isr: %d\n", *(int *)dev_id);
+  *(unsigned int *)ddr_base += 1;
+
+  spin_unlock_irqrestore(&f1_isr_lock, flags);
+  
+  return IRQ_HANDLED;
+}
 ```
 
 ### Compiling and Loading the F1 Interrupt Driver
