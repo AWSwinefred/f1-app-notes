@@ -112,7 +112,7 @@ The command will produce output similar to the following:
                 LnkSta2: Current De-emphasis Level: -6dB, EqualizationComplete+, EqualizationPhase1+
                          EqualizationPhase2+, EqualizationPhase3+, LinkEqualizationRequest-
 ```
-Notice the Capabilities register [60]. It shows that MSI-X functionality is disabled.
+Notice the Capabilities Register [60]. It shows that MSI-X functionality is disabled.
 
 Next, compile the F1 interrupt driver and test program.
 ```
@@ -144,6 +144,9 @@ Rerun the lspci command and you should see that MSI-X was enabled by the driver.
 ```
 
 
+## Generating Interrupts
+
+The cl_dram_dma example design does not generate interrupts independently; however, it does contain a register which when written will produce one or more interrupts. The test program writes this register. When the interrupt is received by the ISR, it will read a DDR location in cl_dram_dma and increment it by one. The test program the interrupt status register in the CL and looks for the acknowledge bit to assert. For fun, the test program also monitors the DDR location and looks for the address to change value.
 
 #### Accessing CL Registers from Software
 
