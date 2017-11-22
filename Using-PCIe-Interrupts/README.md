@@ -155,7 +155,7 @@ $ sudo ./f1_test
 
 ### Interrupt Performance
 
-The test program measures the time it takes from the acknowledging the interrupt to the increment of the DDR location. It give a rough estimate of the interrupt latency, which is approximately 120 mS. If your application contains hardware which must be serviced using an ISR, make sure it contains enough buffering to handle interrupt latencies in the hundredths of milliseconds.
+The test program measures the time it takes from the acknowledging the interrupt to the increment of the DDR location. It give a rough estimate of the interrupt latency, which is ~120 mS. If your application contains hardware which must be serviced using an ISR, make sure it contains enough buffering to handle interrupt latencies in the hundredths of milliseconds.
 
 ## For Further Reading
 
