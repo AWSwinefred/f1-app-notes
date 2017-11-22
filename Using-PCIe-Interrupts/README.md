@@ -5,8 +5,15 @@
 
 ## Introduction
 
+When using interrupts a developer can use the device drivers supplied with the F1 Developer's Kit or write their own. This application note describes the basic kernel calls needed for a developer to write a custom interrupt service routine (ISR) and provides an example that demonstrates those calls.
 
 ## Concepts
+
+To interrupt the host CPU, the F1 Shell (SH) uses a method called Message Signaled Interrupts, MSI. MSI interrupts are not sent using dedicated wires between the device and the CPU's interrupt controller. MSI interrupts use the PCIe bus to transmit a message from the device to grab the attention of the CPU.
+
+MSI first appeared in PCI 2.2 and enabled a device to generate up to 32 interrupts. In PCI 3.0, an extended version of MSI was created called MSI-X, and MSI-X increases the number of possible interrupts from 32 to 2048. A F1 custom logic (CL) accelerator uses this latest MSI-X protocol and can generate up to 16 user-defined interrupts.
+
+
 
 
 ### Accessing CL Registers from Software
@@ -110,7 +117,7 @@ The ocl_base variable holds the starting address of the OCL BAR and is found by 
 
 ## Revision History
 
-|     Date      | Version |     Revision    |   Shell    |   Developer   |
-| ------------- |  :---:  | --------------- |   :---:    |     :---:     |
-|  Nov. 8, 2017 |   1.0   | Initial Release | 0x071417d3 | W. Washington |
+|      Date      | Version |           Revision          |   Shell    |   Developer   |
+| -------------- |  :---:  | --------------------------- |   :---:    |     :---:     |
+|  Nov. 22, 2017 |   1.0   | Initial Release             | 0x071417d3 | W. Washington |
 
