@@ -72,15 +72,19 @@ Once interrupts are allocated in the kernel, ```request_irq``` called is needed 
 static irqreturn_t f1_isr(int a, void *dev_id) {
   unsigned long flags;
 
+  // make sure we do not interrupt another ISR
   spin_lock_irqsave(&f1_isr_lock, flags);
   
+  // write a message to the kernel log file and increment memory
   printk(KERN_NOTICE "f1_isr: %d\n", *(int *)dev_id);
   *(unsigned int *)ddr_base += 1;
 
   spin_unlock_irqrestore(&f1_isr_lock, flags);
   
+  // notify the kernel that the interrupt was handled.
   return IRQ_HANDLED;
 }
+  
 ```
 
 ## Compiling and Loading the F1 Interrupt Driver
