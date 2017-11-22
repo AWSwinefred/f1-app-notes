@@ -13,11 +13,11 @@ To interrupt the host CPU, the F1 Shell (SH) uses a method called Message Signal
 
 MSI first appeared in PCI 2.2 and enabled a device to generate up to 32 interrupts. In PCI 3.0, an extended version of MSI was created called MSI-X, and MSI-X increases the number of possible interrupts from 32 to 2048. A F1 custom logic (CL) accelerator uses this latest MSI-X protocol and can generate up to 16 user-defined interrupts.
 
-Each of these interrupts may call a different ISR, or one or more of the interrupts can call the same ISR with a parameter to differentiate them. The ISR is executed in kernel space, not user space; therefore, care must be taken when writing a custom ISR to prevent noticeable delays in other ISRs or user space applications.
+Each of these interrupts may call a different ISR, or one or more of the interrupts can call the same ISR with a parameter to differentiate them. The ISR is executed in kernel space, not user space; therefore, care must be taken when writing a custom ISR to prevent noticeable delays in other ISRs or user space applications. In additional goal of this application note is to illustrate how to place the majority of interrupt processing in a user space process instead of inside the kernel module.
 
 When the device wants to send an interrupt the SH PCIe block is notified by asserting one of 16 user-interrupt signals. The PCIe will acknowledge the interrupt by asserting the acknowledge signal. The PCIe block will issue a MSI-X message to the PCIe bridge located in the server, and the bridge notifies the CPU.
 
-Before using interrupts, must be [configured in the PCIe block](#configuring-interrupts-in-the-pcie-dma-subsystem), [enabled in PCIe configuration space](#enabling-interrupts-in-pcie-configuration-space), and [registered with the kernel](#registering-interrupt-with-the-kernel).
+Before using interrupts, must be [configured in the PCIe block](#configuring-interrupts-in-the-pcie-dma-subsystem), [enabled in PCIe configuration space](#enabling-interrupts-in-pcie-configuration-space), and [registered with the kernel](#registering-interrupts-with-the-kernel).
 
 ### Configuring Interrupts in the PCIe DMA Subsystem
 
@@ -48,7 +48,7 @@ All OCL addresses are relative to the starting address of the BAR.
 ### Enabling Interrupts in PCIe Configuration Space
 
 
-### Registering Interrupt with the Kernel
+### Registering Interrupts with the Kernel
 
 
 
