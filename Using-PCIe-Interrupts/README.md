@@ -21,7 +21,6 @@ Before using interrupts, they must be [enabled in PCIe configuration space](#ena
 
 ### Enabling Interrupts in PCIe Configuration Space
 
-f1_driver.c
 ```
 #define NUM_OF_USER_INTS 16
 
@@ -38,6 +37,19 @@ struct msix_entry f1_ints[] = {
 ```
 
 ### Configuring Interrupts in the PCIe DMA Subsystem
+
+```
+    // Enable Interrupt Mask (This step seems a little backwards.)    
+    rc = fpga_pci_poke(dma_bar_handle, dma_reg_addr(IRQ_TGT, 0, 0x004), 0xffff);
+    printf("IRQ Block User Interrupt Enable Mask read_data: %0x\n", read_data);
+    
+    // point each user interrupt to a different vector
+    rc = fpga_pci_poke(dma_bar_handle, dma_reg_addr(IRQ_TGT, 0, 0x080), 0x03020100);    
+    rc |= fpga_pci_poke(dma_bar_handle, dma_reg_addr(IRQ_TGT, 0, 0x084), 0x07060504);    
+    rc |= fpga_pci_poke(dma_bar_handle, dma_reg_addr(IRQ_TGT, 0, 0x088), 0x0b0a0908);
+    rc |= fpga_pci_poke(dma_bar_handle, dma_reg_addr(IRQ_TGT, 0, 0x08c), 0x0f0e0d0c);
+    
+```
 
 #### Accessing CL Registers from Software
 
