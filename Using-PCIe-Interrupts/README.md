@@ -83,7 +83,7 @@ static irqreturn_t f1_isr(int a, void *dev_id) {
 }
 ```
 
-### Compiling and Loading the F1 Interrupt Driver
+## Compiling and Loading the F1 Interrupt Driver
 
 To run this example, launch an F1 instance, clone the aws-fpga Github repository, and download the latest [app note files](./f3fbb176cfa44bf73b4c201260f52f25).
 
