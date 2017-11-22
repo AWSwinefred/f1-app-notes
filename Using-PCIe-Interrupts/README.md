@@ -17,9 +17,11 @@ Each of these interrupts may call a different ISR, or one or more of the interru
 
 When the device wants to send an interrupt the SH PCIe block is notified by asserting one of 16 user-interrupt signals. The PCIe will acknowledge the interrupt by asserting the acknowledge signal. The PCIe block will issue a MSI-X message to the PCIe bridge located in the server, and the bridge notifies the CPU.
 
-Before using interrupts, must be configured in the PCIe block, enabled in PCIe configuration space, and registered with the kernel.
+Before using interrupts, must be [configured in the PCIe block](#configuring-interrupts-in-the-pcie-dma-subsystem), enabled in PCIe configuration space, and registered with the kernel.
 
-### Accessing CL Registers from Software
+### Configuring Interrupts in the PCIe DMA Subsystem
+
+#### Accessing CL Registers from Software
 
 The intended purpose of the OCL port is to connect a CL's control/status registers to the PCIe bus. When the F1 card is enumerated the registers are placeed into BAR 0. In order to access these registers, they must be mapped into the device driver's address space. To do this requires four function calls.
 
@@ -41,6 +43,15 @@ The intended purpose of the OCL port is to connect a CL's control/status registe
 
 ```
 All OCL addresses are relative to the starting address of the BAR.
+
+
+### Enabling Interrupts in PCIe Configuration Space
+
+
+### Registering Interrupt with the Kernel
+
+
+
 
 ### Compiling and Running the ATG Device Driver
 To run this example, launch an F1 instance, clone the aws-fpga Github repository, and download the latest [app note files](./f3fbb176cfa44bf73b4c201260f52f25).
