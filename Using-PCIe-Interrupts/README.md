@@ -52,6 +52,7 @@ Once interrupts are allocated in the kernel, ```request_irq``` called is needed 
 ```
 
 ### Configuring Interrupts in the PCIe DMA Subsystem
+The snippet of code shown below runs from user space and programs the PCIe block to handle interrupts. Each user interrupt can be programmed to point to a different interrupt vector.
 
 ```
     // Enable Interrupt Mask (This step seems a little backwards.)    
@@ -67,7 +68,7 @@ Once interrupts are allocated in the kernel, ```request_irq``` called is needed 
 ```
 
 ## A Barebones ISR
-Below is the ISR used in the driver. It uses a spinlock call to make sure multiple interrupts are not interrupting each other. It leaves a short message displaying the user interrupt number. Finally, it increments the DDR location to let the test program know it was called.
+Below is the ISR used in the driver. It uses a spinlock call to make sure multiple interrupts are not interrupting each other. It leaves a short message displaying the user interrupt number. Finally, it increments the DDR location to let the test program know it was called. `Note: Printing from the ISR should only be used for debug purposes, because it can increase interrupt latency.`
 
 ```
 static irqreturn_t f1_isr(int a, void *dev_id) {
