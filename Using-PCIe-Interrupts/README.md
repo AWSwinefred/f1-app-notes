@@ -103,9 +103,8 @@ The ocl_base variable holds the starting address of the OCL BAR and is found by 
 
 ### [AWS F1 FPGA Developer's Kit](https://github.com/aws/aws-fpga)
 ### [AWS F1 Shell Interface Specification](https://github.com/aws/aws-fpga/blob/master/hdk/docs/AWS_Shell_Interface_Specification.md)
-
-### [Using the PCIM Interface Application Note](https://github.com/awslabs/aws-fpga-app-notes/tree/master/Using-PCIM-Port)
-
+### [The MSI Driver Guide HOWTO](https://www.kernel.org/doc/Documentation/PCI/MSI-HOWTO.txt)
+### [Information on Using Spinlocks to Provide Exclusive Access in Kernel.](https://www.kernel.org/doc/Documentation/locking/spinlocks.txt)
 ### [How To Write Linux PCI Drivers](https://www.kernel.org/doc/Documentation/PCI/pci.txt)
 
 ## Revision History
