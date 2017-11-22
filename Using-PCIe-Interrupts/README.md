@@ -70,7 +70,7 @@ The snippet of code shown below runs from user space and programs the PCIe block
 ## A Barebones ISR
 Below is the ISR used in the driver. It uses a spinlock call to make sure multiple interrupts are not interrupting each other. It leaves a short message displaying the user interrupt number. Finally, it increments the DDR location to let the test program know it was called. 
 
-`Note: Printing from the ISR should only be used for debug purposes, because it can increase interrupt latency.`
+*(Note: Printing from the ISR should only be used for debug purposes, because it can increase interrupt latency.)*
 
 ```
 static irqreturn_t f1_isr(int a, void *dev_id) {
