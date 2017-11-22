@@ -114,9 +114,9 @@ The command will produce output similar to the following:
 ```
 Notice the Capabilities register [60]. It shows that MSI-X functionality is disabled.
 
-Next, compile the ATG device driver and test program.
+Next, compile the F1 interrupt driver and test program.
 ```
-$ make                     # compiles the device driver
+$ make                     # compiles the kernel module
 $ make -f f1_test.mk       # compiles the test program
 ```
 Now we are ready to install the device driver. Type the following command:
@@ -143,26 +143,7 @@ Rerun the lspci command and you should see that MSI-X was enabled by the driver.
 
 ```
 
-Check to make sure the output displays ```MSI-X: Enable+```. This indicates that MSI-X functionality is enabled.
 
-
-This command will print the message buffer from the kernel. Since the device driver is a kernel module, special prints are used to place messages in this buffer. You should see something similar to the following:
-```
-
-To understand how to access CL registers mapped on the OCL interface, take a look at the poke_ocl and peek_ocl functions in the [f1_driver.c](./f3fbb176cfa44bf73b4c201260f52f25#file-f1_driver-c) file.
-```
-static void poke_ocl(unsigned int offset, unsigned int data) {
-  unsigned int *phy_addr = (unsigned int *)(ocl_base + offset);
-  *phy_addr = data;
-}
-
-```
-static unsigned int peek_ocl(unsigned int offset) {
-  unsigned int *phy_addr = (unsigned int *)(ocl_base + offset);
-  return *phy_addr;
-}
-```
-The ocl_base variable holds the starting address of the OCL BAR and is found by using ```pci_iomap()```.
 
 #### Accessing CL Registers from Software
 
