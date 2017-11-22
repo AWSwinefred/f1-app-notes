@@ -92,6 +92,7 @@ static void poke_ocl(unsigned int offset, unsigned int data) {
   *phy_addr = data;
 }
 
+```
 static unsigned int peek_ocl(unsigned int offset) {
   unsigned int *phy_addr = (unsigned int *)(ocl_base + offset);
   return *phy_addr;
