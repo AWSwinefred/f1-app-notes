@@ -17,7 +17,7 @@ Each of these interrupts may call a different ISR, or one or more of the interru
 
 When the device wants to send an interrupt the SH PCIe block is notified by asserting one of 16 user-interrupt signals. The PCIe will acknowledge the interrupt by asserting the acknowledge signal. The PCIe block will issue a MSI-X message to the PCIe bridge located in the server, and the bridge notifies the CPU.
 
-Before using interrupts, they must be [enabled in PCIe configuration space](#enabling-interrupts-in-pcie-configuration-space), [configured in the PCIe block](#configuring-interrupts-in-the-pcie-dma-subsystem), and [registered with the kernel](#registering-interrupts-with-the-kernel).
+Before using interrupts, they must be [enabled in PCIe configuration space](#enabling-interrupts-in-pcie-configuration-space), [registered with the kernel](#registering-interrupts-with-the-kernel), and [configured in the PCIe block](#configuring-interrupts-in-the-pcie-dma-subsystem).
 
 ### Enabling Interrupts in PCIe Configuration Space
 
@@ -34,6 +34,18 @@ struct msix_entry f1_ints[] = {
   // allocate MSIX resources
   result = pci_enable_msix(f1_dev, f1_ints, NUM_OF_USER_INTS);
 
+```
+
+### Registering Interrupts with the Kernel
+
+
+```
+  for(i=0; i<NUM_OF_USER_INTS; i++) {
+    f1_dev_id[i] = kmalloc(sizeof(int), GFP_DMA | GFP_USER);
+    *f1_dev_id[i] = i;
+    request_irq(f1_ints[i].vector, f1_isr, 0, "f1_driver", f1_dev_id[i]);
+  }
+  
 ```
 
 ### Configuring Interrupts in the PCIe DMA Subsystem
@@ -73,10 +85,6 @@ The intended purpose of the OCL port is to connect a CL's control/status registe
 
 ```
 All OCL addresses are relative to the starting address of the BAR.
-
-
-
-### Registering Interrupts with the Kernel
 
 
 
