@@ -146,33 +146,15 @@ Rerun the lspci command and you should see that MSI-X was enabled by the driver.
 
 ## Generating Interrupts
 
-The cl_dram_dma example design does not generate interrupts independently; however, it does contain a register which when written will produce one or more interrupts. The test program writes this register. When the interrupt is received by the ISR, it will read a DDR location in cl_dram_dma and increment it by one. The test program the interrupt status register in the CL and looks for the acknowledge bit to assert. For fun, the test program also monitors the DDR location and looks for the address to change value.
+The cl_dram_dma example design does not generate interrupts independently; however, it does contain a register which when written will produce one or more interrupts. The test program writes this register to generate interrupts. When the interrupt is received by the ISR, it will read a DDR location in cl_dram_dma and increment it by one. The test program monitors the interrupt status register in the CL and looks for the acknowledge bit to assert. For fun, the test program also monitors the DDR location and looks for the 32 bit value to change.
 
-#### Accessing CL Registers from Software
-
-The intended purpose of the OCL port is to connect a CL's control/status registers to the PCIe bus. When the F1 card is enumerated the registers are placeed into BAR 0. In order to access these registers, they must be mapped into the device driver's address space. To do this requires four function calls.
-
+To run the test, type:
 ```
-  // Retrieve the device specific information about the card
-  f1_dev = pci_get_domain_bus_and_slot(DOMAIN, BUS, PCI_DEVFN(slot,FUNCTION));
-
-  ...
-  // Initialize the card
-  result = pci_enable_device(f1_dev);
-
-  ...
-  // Mark the region as owned
-  result = pci_request_region(f1_dev, OCL_BAR, "OCL Region");
-
-  ...
-  // Map the entire BAR 0 region into the driver's address space
-  ocl_base = (void __iomem *)pci_iomap(f1_dev, OCL_BAR, 0);   // BAR=0 (OCL), maxlen = 0 (map entire bar)
-
+$ sudo ./f1_test
 ```
-All OCL addresses are relative to the starting address of the BAR.
 
-
-
+### Interrupt Performance
+The test program 
 
 
 ## For Further Reading
