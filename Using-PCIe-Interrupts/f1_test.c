@@ -152,9 +152,6 @@ int interrupt_example(int slot_id, int interrupt_number){
     rc = fpga_pci_peek(dma_bar_handle, dma_reg_addr(IRQ_TGT, 0, 0x004), &read_data);
     printf("IRQ Block User Interrupt Enable Mask read_data: %0x, Addr: %0x\n", read_data, dma_reg_addr(IRQ_TGT, 0, 0x004));
     
-    rc = fpga_pci_poke(dma_bar_handle, dma_reg_addr(IRQ_TGT, 0, 0x004), 0xffff);
-    printf("IRQ Block User Interrupt Enable Mask read_data: %0x\n", read_data);
-    
     rc = fpga_pci_peek(dma_bar_handle, dma_reg_addr(IRQ_TGT, 0, 0x004), &read_data);
     printf("IRQ Block User Interrupt Enable Mask read_data: %0x\n", read_data);
     
@@ -162,23 +159,21 @@ int interrupt_example(int slot_id, int interrupt_number){
     rc = fpga_pci_peek(dma_bar_handle, dma_reg_addr(IRQ_TGT, 0, 0x080), &read_data);
     printf("IRQ Block User Vector Number read_data: %0x, Addr: %0x\n", read_data, dma_reg_addr(IRQ_TGT, 0, 0x080));
     
-    rc = fpga_pci_poke(dma_bar_handle, dma_reg_addr(IRQ_TGT, 0, 0x080), 0x03020100);
-    printf("IRQ Block User Vector Number read_data: %0x\n", read_data);
-    
-    rc = fpga_pci_poke(dma_bar_handle, dma_reg_addr(IRQ_TGT, 0, 0x084), 0x07060504);
-    printf("IRQ Block User Vector Number read_data: %0x\n", read_data);
-    
-    rc = fpga_pci_poke(dma_bar_handle, dma_reg_addr(IRQ_TGT, 0, 0x088), 0x0b0a0908);
-    printf("IRQ Block User Vector Number read_data: %0x\n", read_data);
-    
-    rc = fpga_pci_poke(dma_bar_handle, dma_reg_addr(IRQ_TGT, 0, 0x08c), 0x0f0e0d0c);
-    printf("IRQ Block User Vector Number read_data: %0x\n", read_data);
+    // point each user interrupt to a different vector
+    rc  = fpga_pci_poke(dma_bar_handle, dma_reg_addr(IRQ_TGT, 0, 0x080), 0x03020100);
+    rc |= fpga_pci_poke(dma_bar_handle, dma_reg_addr(IRQ_TGT, 0, 0x084), 0x07060504);
+    rc |= fpga_pci_poke(dma_bar_handle, dma_reg_addr(IRQ_TGT, 0, 0x088), 0x0b0a0908);
+    rc |= fpga_pci_poke(dma_bar_handle, dma_reg_addr(IRQ_TGT, 0, 0x08c), 0x0f0e0d0c);
+    fail_on(rc, out, "Unable to write to the fpga !");      
     
     // read the first one back for grins
     rc = fpga_pci_peek(dma_bar_handle, dma_reg_addr(IRQ_TGT, 0, 0x080), &read_data);
     printf("IRQ Block User Vector Number read_data: %0x\n", read_data);
     
-    
+    // Enable Interrupt Mask (This step seems a little backwards.)    
+    rc = fpga_pci_poke(dma_bar_handle, dma_reg_addr(IRQ_TGT, 0, 0x004), 0xffff);
+    printf("IRQ Block User Interrupt Enable Mask read_data: %0x\n", read_data);
+        
     printf("Triggering each of the MSI-X interrupts...\n");
     for(i=0; i<NUM_OF_USER_INTS; i++) {
       rc = fpga_pci_poke(pci_bar_handle, interrupt_reg_offset , 1 << i);
