@@ -187,8 +187,10 @@ The test program measures the time it takes from the acknowledging the interrupt
 
 ### Things to Check
 
+During driver development, you may observe that interrupts stop working. The likely cause is an errata described in 
+[MSI-X Interrupts on F1 FPGA x1.3.X Shell v071417d3](https://forums.aws.amazon.com/ann.jspa?annID=4917). This can occur if interrupts are issued by the CL without MSI-X support enabled by the kernel space software.
 
-[MSI-X Interrupts on F1 FPGA x1.3.X Shell v071417d3](https://forums.aws.amazon.com/ann.jspa?annID=4917)
+The Makefile contains a target, ```reload``` that unsticks the interrupts and restores functionality.
 
 ```
 $ make reload                # reloads the CL design and unsticks the interrupts
