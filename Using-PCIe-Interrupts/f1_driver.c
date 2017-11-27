@@ -153,17 +153,8 @@ static int __init f1_init(void) {
   
   // allocate MSIX resources
   result = pci_enable_msix(f1_dev, f1_ints, NUM_OF_USER_INTS);
-  printk(KERN_NOTICE "pci_enable_msix result: %x, %x\n", result, f1_ints[0].vector);
-  printk(KERN_NOTICE "pci_enable_msix result: %x, %x\n", result, f1_ints[1].vector);
-  /*
-  f1_dev_id = kmalloc(sizeof(int), GFP_DMA | GFP_USER);
-  *f1_dev_id = 3;
-  
-  f1_dev_id_1 = kmalloc(sizeof(int), GFP_DMA | GFP_USER);
-  *f1_dev_id_1 = 4;
-  */
-  //  request_irq(f1_ints[0].vector, f1_isr, 0, "f1_driver", f1_dev_id);
-  //  request_irq(f1_ints[1].vector, f1_isr, 0, "f1_driver", f1_dev_id_1);
+
+  // initialize user interrupts with interrupt specific data
   for(i=0; i<NUM_OF_USER_INTS; i++) {
     f1_dev_id[i] = kmalloc(sizeof(int), GFP_DMA | GFP_USER);
     *f1_dev_id[i] = i;
@@ -177,8 +168,7 @@ static int __init f1_init(void) {
 static void __exit f1_exit(void) {
   int i;
   
-  //  free_irq(f1_ints[0].vector, f1_dev_id);
-  //  free_irq(f1_ints[1].vector, f1_dev_id_1);
+  // free up interrupt vectors and resources
   for(i=0; i<NUM_OF_USER_INTS; i++) {
     free_irq(f1_ints[i].vector, f1_dev_id[i]);
     kfree(f1_dev_id[i]);
