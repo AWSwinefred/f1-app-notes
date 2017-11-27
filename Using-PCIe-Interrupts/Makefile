@@ -7,7 +7,7 @@ clean:
 	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) clean
 
 test:
-	gcc -std=gnu99 -o f1_test f1_test.c
+	gcc -DCONFIG_LOGLEVEL=4 -std=gnu99 -g -Wall -I$(SDK_DIR)/userspace/include -o f1_test f1_test.c -lfpga_mgmt -lrt -lpthread
 
 
 reload:
