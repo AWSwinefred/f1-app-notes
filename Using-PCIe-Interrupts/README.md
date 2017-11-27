@@ -145,7 +145,7 @@ Notice the Capabilities Register [60]. It shows that MSI-X functionality is disa
 Next, compile the F1 interrupt driver and test program.
 ```
 $ make                     # compiles the kernel module
-$ make -f f1_test.mk       # compiles the test program
+$ make test                # compiles the test program
 ```
 Now we are ready to install the device driver. Type the following command:
 ```
@@ -184,6 +184,15 @@ $ sudo ./f1_test
 ### Interrupt Performance
 
 The test program measures the time it takes from the acknowledging the interrupt to the increment of the DDR location. It gives a rough estimate of the interrupt latency, which is ~120 mS. If your application contains hardware which must be serviced using an ISR, make sure it contains enough buffering to handle interrupt latencies for your application.
+
+### Things to Check
+
+
+[MSI-X Interrupts on F1 FPGA x1.3.X Shell v071417d3](https://forums.aws.amazon.com/ann.jspa?annID=4917)
+
+```
+$ make reload                # reloads the CL design and unsticks the interrupts
+```
 
 ## For Further Reading
 
