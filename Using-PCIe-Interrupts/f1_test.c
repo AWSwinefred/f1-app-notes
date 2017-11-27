@@ -122,10 +122,9 @@ int interrupt_example(int slot_id, int interrupt_number){
     pci_bar_handle_t pci_bar_handle = PCI_BAR_HANDLE_INIT;
     pci_bar_handle_t dma_bar_handle = PCI_BAR_HANDLE_INIT;
     pci_bar_handle_t ddr_bar_handle = PCI_BAR_HANDLE_INIT;
-    uint32_t rd,  read_data;
+    uint32_t read_data;
     uint32_t last_read_data;
     int rc = 0;
-    int num_fds = 1;
     int pf_id = 0;
     int bar_id = 0;
     int fpga_attach_flags = 0;
