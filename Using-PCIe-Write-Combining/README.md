@@ -4,7 +4,7 @@
 ## Version 1.0
 
 ## Introduction
-A developer has multiple ways to transfer data to a F1 accelerator. For large transfers (>1KByte), either the SH DMA or custom PCIM logic are good choices for transferring data from host memory to accelerator. For small transfers, the overhead of setting up a hardware-based data move is significant and may consume more time than simply writing the data directly to the accelerator. 
+A developer has multiple ways to transfer data to a F1 accelerator. For large transfers (>1KByte), either the Shell DMA or custom PCIM logic are good choices for transferring data from host memory to accelerator. For small transfers, the overhead of setting up a hardware-based data move is significant and may consume more time than simply writing the data directly to the accelerator. 
 Write combining (WC) is a technique used to increase host write performance to non-cacheable PCIe devices. This application note describes when to use WC and how to take advantage of WC in software for a F1 accelerator. Write bandwidth benchmarks are included to show the performance improvements possible with WC.
 
 ## Concepts
@@ -182,7 +182,11 @@ The ```-w``` option tells ```wc_perf``` to use WC, and the number of write data 
 
 Suppose instead of DDR memory there was a piece of hardware located at AppPF BAR4 that required individual writes to control particular functions. The hardware would only see a single access with WC enabled instead of 16 individual writes. Care must be taken when placing logic other than memory such as FIFOs in a WC region, because the order or number of writes does not match the application writes.
 
-Finally, data being held in the WC buffer prior to being written is not guaranteed to be coherent. If a read is performed before the WC buffer is flushed, it may contain stall data.
+A simular issue exists if a FIFO is mapped into a WC region. The FIFO should decode across a 64B aligned address to prevent data written to the same address from being "eaten" by the BIU buffer, and the software must "spray" the data across the 64B buffer. For example, six byte writes to address 0 of BAR4 will result in a single byte write to address 0 when the buffer is stored. To ensure all six bytes are written to the FIFO, the software must write addresses 0 to 5. If the BIU buffer is stored with partial data, the FIFO will receive multiple writes instead of a single 64B beat.
+
+Finally, data being held in the WC buffer prior to being written is not guaranteed to be coherent. If a read is performed before the WC buffer is flushed, it may contain stale data.
+
+When BIU data are stored is not deterministic. Depending on the CPU version, it only contains a small number of BIU buffers (<=6). If another process accesses a different WC region, then a partially filled buffer may be flushed to make room. If an application must make sure that all writes are stored from the BIU, then it is the software's responsiblity to use a x86 SFENCE instruction or similar mechanism to force the writes.
 
 ## For Further Reading:
 The sysfs Filesystem
