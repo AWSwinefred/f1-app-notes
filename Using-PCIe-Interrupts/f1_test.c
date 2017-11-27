@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Amazon.com, Inc. or its affiliates.
+ * Copyright 2017 Amazon.com, Inc. or its affiliates.
  *
  * This software is available to you under a choice of one of two
  * licenses.  You may choose to be licensed under the terms of the GNU
@@ -143,18 +143,9 @@ int interrupt_example(int slot_id, int interrupt_number){
     rc = fpga_pci_attach(slot_id, pf_id, 4, fpga_attach_flags, &ddr_bar_handle);
     fail_on(rc, out, "Unable to attach to the AFI on slot id %d", slot_id);
     
-    /*
-    for(int j=0; j<=0x1fc; j+=4) {
-      rc = fpga_pci_peek(dma_bar_handle, dma_reg_addr(MSIX_TGT, 0, j), &read_data);
-      printf("j: %0x, read_data: %0x\n", j, read_data);
-    }
-    */
     
     rc = fpga_pci_peek(ddr_bar_handle, 0, &last_read_data);
     printf("Peek last_read_data: %0x\n", last_read_data);
-    
-    //    rc = fpga_pci_poke(ddr_bar_handle, 0, 0xaaaa5555);
-    //    fail_on(rc, out, "Unable to write to the fpga !");
     
     rc = fpga_pci_peek(dma_bar_handle, dma_reg_addr(IRQ_TGT, 0, 0x000), &read_data);
     printf("IRQ Block Indentifier read_data: %0x\n", read_data);
@@ -168,7 +159,7 @@ int interrupt_example(int slot_id, int interrupt_number){
     rc = fpga_pci_peek(dma_bar_handle, dma_reg_addr(IRQ_TGT, 0, 0x004), &read_data);
     printf("IRQ Block User Interrupt Enable Mask read_data: %0x\n", read_data);
     
-    // pick different vector
+    // pick different vector for each interrupt
     rc = fpga_pci_peek(dma_bar_handle, dma_reg_addr(IRQ_TGT, 0, 0x080), &read_data);
     printf("IRQ Block User Vector Number read_data: %0x, Addr: %0x\n", read_data, dma_reg_addr(IRQ_TGT, 0, 0x080));
     
@@ -184,66 +175,23 @@ int interrupt_example(int slot_id, int interrupt_number){
     rc = fpga_pci_poke(dma_bar_handle, dma_reg_addr(IRQ_TGT, 0, 0x08c), 0x0f0e0d0c);
     printf("IRQ Block User Vector Number read_data: %0x\n", read_data);
     
+    // read the first one back for grins
     rc = fpga_pci_peek(dma_bar_handle, dma_reg_addr(IRQ_TGT, 0, 0x080), &read_data);
     printf("IRQ Block User Vector Number read_data: %0x\n", read_data);
     
     
-    //    rc = fpga_pci_peek(dma_bar_handle, dma_reg_addr(MSIX_TGT, 0, 0xfe0), &read_data);
-    //    printf("pending_bit_array read_data: %0x\n", read_data);
-    
-    printf("Triggering MSI-X Interrupt 0\n");
+    printf("Triggering each of the MSI-X interrupts...\n");
     for(i=0; i<NUM_OF_USER_INTS; i++) {
       rc = fpga_pci_poke(pci_bar_handle, interrupt_reg_offset , 1 << i);
       fail_on(rc, out, "Unable to write to the fpga !");      
     }
     
-    //    rc = fpga_pci_poke(pci_bar_handle, interrupt_reg_offset , 1 << interrupt_number);
-    //    rc = fpga_pci_poke(pci_bar_handle, interrupt_reg_offset , 0x00000000);
-    //    fail_on(rc, out, "Unable to write to the fpga !");
-    /*    
-    rc = fpga_pci_poke(pci_bar_handle, interrupt_reg_offset , 0x00000008);
-    //    usleep(500);
-    rc = fpga_pci_poke(pci_bar_handle, interrupt_reg_offset , 0x00000004);
-    //    usleep(500);
-    rc = fpga_pci_poke(pci_bar_handle, interrupt_reg_offset , 0x00000002);
-    //    usleep(500);
-    rc = fpga_pci_poke(pci_bar_handle, interrupt_reg_offset , 0x00000001);
-    //    usleep(500);
-    fail_on(rc, out, "Unable to write to the fpga !");
-    */
-    
-    //    rc = fpga_pci_peek(dma_bar_handle, dma_reg_addr(MSIX_TGT, 0, 0xfe0), &read_data);
-    //    printf("pending_bit_array read_data: %0x\n", read_data);
-    
-    //        rc = fpga_pci_poke(pci_bar_handle, interrupt_reg_offset , 0x1 << (16 + interrupt_number) );
-    /* ww
-        // In this CL, a successful interrupt is indicated by the CL setting bit <interrupt_number + 16>
-        // of the interrupt register. Here we check that bit is set and write 1 to it to clear.
-        rc = fpga_pci_peek(pci_bar_handle, interrupt_reg_offset, &read_data);
-	printf("CL read_data: %08x\n", read_data);
-        rc = fpga_pci_peek(pci_bar_handle, interrupt_reg_offset, &read_data);
-	printf("CL read_data: %08x\n", read_data);
-        rc = fpga_pci_peek(pci_bar_handle, interrupt_reg_offset, &read_data);
-	printf("CL read_data: %08x\n", read_data);
-
-	fail_on(rc, out, "Unable to read from the fpga !");
-	//        read_data = read_data & (1 << (interrupt_number + 16));
-	//        read_data = read_data & 0xffff0000;
-	printf("CL read_data: %08x\n", read_data);
-
-        rc = fpga_pci_poke(pci_bar_handle, interrupt_reg_offset , read_data );
-        fail_on(rc, out, "Unable to write to the fpga !");
-    */
-
     /* grab start time */
     rc = clock_gettime(CLOCK_MONOTONIC, &ts_start);
     
         rc = fpga_pci_peek(pci_bar_handle, interrupt_reg_offset, &read_data);
-	printf("CL read_data: %08x\n", read_data);
+	printf("CL interrupt status read_data: %08x\n", read_data);
 	
-        rc = fpga_pci_peek(pci_bar_handle, interrupt_reg_offset, &read_data);
-	printf("CL read_data: %08x\n", read_data);
-
 
 	i = 0;
 	do {
@@ -263,25 +211,20 @@ int interrupt_example(int slot_id, int interrupt_number){
     printf("time %ld.%09ld seconds for ISR\n",
     ts_end.tv_sec, ts_end.tv_nsec);
     
-        // In this CL, a successful interrupt is indicated by the CL setting bit <interrupt_number + 16>
-        // of the interrupt register. Here we check that bit is set and write 1 to it to clear.
-        rc = fpga_pci_peek(pci_bar_handle, interrupt_reg_offset, &read_data);
-	printf("CL read_data: %08x\n", read_data);
-        rc = fpga_pci_peek(pci_bar_handle, interrupt_reg_offset, &read_data);
-	printf("CL read_data: %08x\n", read_data);
-        rc = fpga_pci_peek(pci_bar_handle, interrupt_reg_offset, &read_data);
-	printf("CL read_data: %08x\n", read_data);
-	fail_on(rc, out, "Unable to read from the fpga !");
+    // In this CL, a successful interrupt is indicated by the CL setting bit <interrupt_number + 16>
+    // of the interrupt register. Here we check that bit is set and write 1 to it to clear.
+    rc = fpga_pci_peek(pci_bar_handle, interrupt_reg_offset, &read_data);
+    printf("CL read_data: %08x\n", read_data);
+    fail_on(rc, out, "Unable to read from the fpga !");
 
-	// clear interrupt
-        rc = fpga_pci_poke(pci_bar_handle, interrupt_reg_offset , read_data );
-        fail_on(rc, out, "Unable to write to the fpga !");
-	
-        rc = fpga_pci_peek(pci_bar_handle, interrupt_reg_offset, &read_data);
-	printf("CL read_data: %08x\n", read_data);
-	fail_on(rc, out, "Unable to read from the fpga !");
-	//    rc = fpga_pci_peek(dma_bar_handle, dma_reg_addr(MSIX_TGT, 0, 0xfe0), &read_data);
-	//    printf("pending_bit_array read_data: %0x\n", read_data);
+    // clear acknowledge bits
+    rc = fpga_pci_poke(pci_bar_handle, interrupt_reg_offset , read_data );
+    fail_on(rc, out, "Unable to write to the fpga !");
+    
+    // make sure bits were cleared
+    rc = fpga_pci_peek(pci_bar_handle, interrupt_reg_offset, &read_data);
+    printf("CL read_data: %08x\n", read_data);
+    fail_on(rc, out, "Unable to read from the fpga !");
 
 out:
     printf("leaving\n");
