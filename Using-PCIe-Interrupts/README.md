@@ -45,25 +45,29 @@ Once interrupts are allocated in the kernel, ```request_irq``` called is needed 
 ```
   for(i=0; i<NUM_OF_USER_INTS; i++) {
     f1_dev_id[i] = kmalloc(sizeof(int), GFP_DMA | GFP_USER);
-    *f1_dev_id[i] = i;
+    *f1_dev_id[i] = i;                                          // used to differentiate between the user interrupts
     request_irq(f1_ints[i].vector, f1_isr, 0, "f1_driver", f1_dev_id[i]);
   }
   
 ```
 
 ### Configuring Interrupts in the PCIe DMA Subsystem
-The snippet of code shown below runs from user space and programs the PCIe block to handle interrupts. At reset, the interrupt vector registers all point to index 0. For this example, each user interrupt is programmed to point to a different interrupt vector to illustrate using all 16 entries.
+The snippet of code shown below runs from user space and programs the PCIe block to handle interrupts. To define which user interrupt line cooresponds to which msix_entry/vector, the IRQ Block User Vector Number must be programmed. At reset, the interrupt vector registers all point to index 0. For this example, each user interrupt is programmed to point to a different interrupt vector to illustrate using all 16 entries. The vector numbers are aligned on byte boundaries, and four 32-bit addresses (0x80-0x8c) are used to assign interrupt vectors.
 
 ```
-    // Enable Interrupt Mask (This step seems a little backwards.)    
-    rc = fpga_pci_poke(dma_bar_handle, dma_reg_addr(IRQ_TGT, 0, 0x004), 0xffff);
-    printf("IRQ Block User Interrupt Enable Mask read_data: %0x\n", read_data);
-    
     // point each user interrupt to a different vector
     rc = fpga_pci_poke(dma_bar_handle, dma_reg_addr(IRQ_TGT, 0, 0x080), 0x03020100);    
     rc |= fpga_pci_poke(dma_bar_handle, dma_reg_addr(IRQ_TGT, 0, 0x084), 0x07060504);    
     rc |= fpga_pci_poke(dma_bar_handle, dma_reg_addr(IRQ_TGT, 0, 0x088), 0x0b0a0908);
     rc |= fpga_pci_poke(dma_bar_handle, dma_reg_addr(IRQ_TGT, 0, 0x08c), 0x0f0e0d0c);
+```
+
+The final step is to enable interrupts by writing the interrupt enable mask bits. In the example, all the interrupts are enabled at once with a single write operation; however, you can also use two other registers, IRQ 0x4 and 0x8, to set and clear individual bits without the risk associated with a RMW operation.
+
+```
+    // Enable Interrupt Mask (This step seems a little backwards.)    
+    rc = fpga_pci_poke(dma_bar_handle, dma_reg_addr(IRQ_TGT, 0, 0x004), 0xffff);
+    printf("IRQ Block User Interrupt Enable Mask read_data: %0x\n", read_data);
     
 ```
 
