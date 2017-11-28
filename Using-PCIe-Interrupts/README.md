@@ -52,7 +52,7 @@ Once interrupts are allocated in the kernel, ```request_irq``` called is needed 
 ```
 
 ### Configuring Interrupts in the PCIe DMA Subsystem
-The snippet of code shown below runs from user space and programs the PCIe block to handle interrupts. To define which user interrupt line cooresponds to which msix_entry/vector, the IRQ Block User Vector Number must be programmed. At reset, the interrupt vector registers all point to index 0. For this example, each user interrupt is programmed to point to a different interrupt vector to illustrate using all 16 entries. The vector numbers are aligned on byte boundaries, and four 32-bit addresses (0x80-0x8c) are used to assign interrupt vectors.
+The snippet of code shown below runs from user space and programs the PCIe block to handle interrupts. To set which user interrupt line cooresponds to which msix_entry/vector, the IRQ Block User Vector Number must be programmed. At reset, the interrupt vector registers all point to index 0. For this example, each user interrupt is programmed to point to a different interrupt vector to illustrate using all 16 entries. The vector numbers are aligned on byte boundaries, and four 32-bit addresses (0x80-0x8c) are used to assign interrupt vectors.
 
 ```
     // point each user interrupt to a different vector
