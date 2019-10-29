@@ -13,7 +13,7 @@ To interrupt the host CPU, the F1 Shell (SH) uses a method called Message Signal
 
 MSI first appeared in PCI 2.2 and enabled a device to generate up to 32 interrupts. In PCI 3.0, an extended version of MSI was created called MSI-X, and MSI-X increases the number of possible interrupts from 32 to 2048. A F1 custom logic (CL) accelerator uses this latest MSI-X protocol and can generate up to 16 user-defined interrupts.
 
-Each of these interrupts may call a different ISR, or one or more of the interrupts can call the same ISR with a parameter to differentiate them. The ISR is executed in kernel space, not user space; therefore, care must be taken when writing a custom ISR to prevent noticeable delays in other ISRs or user space applications. In additional goal of this application note is to illustrate how to place the majority of interrupt processing in a user space process instead of inside the kernel module.
+Each of these interrupts may call a different ISR, or one or more of the interrupts can call the same ISR with a parameter to differentiate them. The ISR is executed in kernel space, not user space; therefore, care must be taken when writing a custom ISR to prevent noticeable delays in other ISRs or user space applications. An additional goal of this application note is to illustrate how to place the majority of interrupt processing in a user space process instead of inside the kernel module.
 
 When the device wants to send an interrupt the SH PCIe block is notified by asserting one of 16 user-interrupt signals. The PCIe will acknowledge the interrupt by asserting the acknowledge signal. The PCIe block will issue a MSI-X message to the PCIe bridge located in the server, and the bridge notifies the CPU.
 
@@ -21,7 +21,7 @@ Before using interrupts, they must be [enabled in PCIe configuration space](#ena
 
 ### Enabling Interrupts in PCIe Configuration Space
 
-MSI-X functionality is enabled using the ```pci_enable_msix``` function. It requires a pointer to the device's PCI data structure, a table to map kernel vector numbers to device interrupts, and number of interrupts are being allocated in the kernel.
+MSI-X functionality is enabled using the ```pci_enable_msix``` function. It requires a pointer to the device's PCI data structure, a table to map kernel vector numbers to device interrupts, and the number of interrupts being allocated in the kernel.
 
 ```
 #define NUM_OF_USER_INTS 16
@@ -40,7 +40,7 @@ struct msix_entry f1_ints[] = {
 
 ### Registering Interrupts with the Kernel
 
-Once interrupts are allocated in the kernel, ```request_irq``` called is needed to connect a specific interrupt to a specific ISR. In this example all 16 interrupt sources point to the same ISR, ```f1_isr```. To differentiate between the interrupt sources, an unique structure (a pointer to an integer) is registered with the vector. It ISR can retrieve this structure when it is called.
+Once interrupts are allocated in the kernel, a call to ```request_irq``` is needed to connect a specific interrupt to a specific ISR. In this example all 16 interrupt sources point to the same ISR, ```f1_isr```. To differentiate between the interrupt sources, a unique structure (a pointer to an integer) is registered with the vector. The ISR can retrieve this structure when it is called.
 
 ```
   for(i=0; i<NUM_OF_USER_INTS; i++) {
